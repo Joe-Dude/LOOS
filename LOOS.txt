@@ -3,13 +3,13 @@
 Name: 'Iframe Browser',
 Desc: 'This is a basic web tool that allows you too visit some online resources in the Laughable OS.',
 Icon: 'https://raw.githubusercontent.com/Joe-Dude/LOOS/main/Iframe Browser Icon.png',
-Ss: '',
+Ss: 'https://raw.githubusercontent.com/Joe-Dude/LOOS/main/Screenshot 2025-10-13 9.49.22 PM.png',
 Embed: 'https://raw.githubusercontent.com/Joe-Dude/LOOS/main/iframebrowser.txt',
 ]
 [
 Name: 'Browser.lol Search Engine',
 Desc: 'This is an extremely advanced web app capable of accessing and emulationg almost any browser online. You must be connected to wifi in order to use.',
-Icon: 'https://raw.githubusercontent.com/Joe-Dude/LOOS/main/Iframe Browser Icon.png',
+Icon: 'https://raw.githubusercontent.com/Joe-Dude/LOOS/main/browser.lol Search Engine Icon.jpeg',
 Ss: 'https://raw.githubusercontent.com/Joe-Dude/LOOS/main/Screenshot 2025-10-13 9.49.22 PM.png',
 Embed: 'https://raw.githubusercontent.com/Joe-Dude/LOOS/main/Browser.lol Search Engine Code',
 ]
