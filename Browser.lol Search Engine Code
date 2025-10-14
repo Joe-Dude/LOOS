@@ -1,75 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Browser.lol Embed Popup</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOS.online</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        #browserFrame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+        
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: Arial, sans-serif;
+            color: #333;
+            font-size: 18px;
+        }
+    </style>
 </head>
 <body>
-<button id="openEmbed">Open Browser.lol Embed</button>
-
-<script>
-function openEmbedInRealPage(embedUrl, width = 1024, height = 768) {
-    const newWin = window.open('', '_blank', `width=${width},height=${height}`);
-
-    if (!newWin) {
-        alert('Popup blocked: allow popups for this site.');
-        return;
-    }
-
-    // Remove clipboard permission entirely to block access requests
-    const html = `<!DOCTYPE html>
-<html lang='en'>
-<head>
-<meta charset='UTF-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1.0'>
-<meta name='referrer' content='no-referrer-when-downgrade'>
-<title>Browser.lol Embed</title>
-<style>
-html, body { height: 100%; margin: 0; }
-#iframeWrapper { width: 100%; height: 100%; position: relative; }
-#iframeWrapper iframe { width: 100%; height: 100%; border: 0; display: block; }
-#loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: sans-serif; background: white; z-index: 10; }
-</style>
-</head>
-<body>
-<div id='iframeWrapper'>
-<div id='loading'>Loading…</div>
-<iframe id='frame'
-    src='${embedUrl}'
-    allow='geolocation; microphone; camera; autoplay; encrypted-media; fullscreen'
-    referrerpolicy='no-referrer-when-downgrade'
-    title='Browser.lol Embed'></iframe>
-</div>
-<script>
-(function() {
-    // Prevent iframe content from requesting clipboard permissions
-    if (navigator.permissions) {
-        navigator.permissions.query = () => Promise.resolve({ state: 'denied' });
-    }
-    const frame = document.getElementById('frame');
-    frame.addEventListener('load', function() {
+    <div class="loading" id="loading">Loading...</div>
+    <iframe 
+        id="browserFrame"
+        src="https://browser.lol"
+        sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals allow-pointer-lock"
+        allow="accelerometer; camera; encrypted-media; geolocation; gyroscope; microphone; midi"
+        referrerpolicy="no-referrer"
+        style="display: none;">
+    </iframe>
+    <script>
+        const iframe = document.getElementById('browserFrame');
         const loading = document.getElementById('loading');
-        if (loading) loading.remove();
-    });
-})();
-</script>
-</body>
-</html>`;
-
-    newWin.document.open();
-    newWin.document.write(html);
-    newWin.document.close();
-}
-
-// Button click listener
-const btn = document.getElementById('openEmbed');
-if (btn) {
-    btn.addEventListener('click', function() {
-        openEmbedInRealPage('https://browser.lol');
-    });
-}
-</script>
-
+        
+        // Show iframe once loaded
+        iframe.onload = function() {
+            loading.style.display = 'none';
+            iframe.style.display = 'block';
+        };
+        
+        // Handle load errors
+        iframe.onerror = function() {
+            loading.textContent = 'Failed to load. Site may block iframe embedding.';
+        };
+        
+        // Attempt to modify document title
+        document.title = 'LOS.online';
+        
+        // Try to handle fullscreen requests from iframe
+        document.addEventListener('fullscreenchange', function() {
+            if (document.fullscreenElement) {
+                console.log('Fullscreen activated');
+            }
+        });
+    </script>
 </body>
 </html>
