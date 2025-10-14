@@ -2,8 +2,8 @@
 [
 Name: 'Iframe Browser',
 Desc: 'This is a basic web tool that allows you too visit some online resources in the Laughable OS.',
-Icon: '',
-Ss: '',
-Embed: '',
+Icon: 'https://raw.githubusercontent.com/Joe-Dude/LOOS/main/[FILENAME1]',
+Ss: 'https://raw.githubusercontent.com/Joe-Dude/LOOS/main/[FILENAME1]',
+Embed: 'https://raw.githubusercontent.com/Joe-Dude/LOOS/main/[FILENAME1]',
 ]
 }
