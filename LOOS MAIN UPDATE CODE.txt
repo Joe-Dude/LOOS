@@ -430,9 +430,24 @@
             WindowManager.makeDraggable(windowEl);
             WindowManager.focus(windowEl);
 
-            windowEl.querySelector('.close-btn').addEventListener('click', () => WindowManager.close(app.Name));
+            windowEl.querySelector('.close-btn').addEventListener('click', () => {
+                // parent.postMessage for close tab
+                parent.postMessage('close-tab', '*');
+                WindowManager.close(app.Name);
+            });
             windowEl.querySelector('.minimize-btn').addEventListener('click', () => WindowManager.minimize(app.Name));
-            windowEl.querySelector('.maximize-btn').addEventListener('click', () => WindowManager.maximize(app.Name));
+            windowEl.querySelector('.maximize-btn').addEventListener('click', () => {
+                // Use parent.postMessage for fullscreen actions
+                const win = openWindows[app.Name];
+                if (!win) return;
+                const windowEl = win.windowEl;
+                if (windowEl.dataset.maximized === 'true') {
+                    parent.postMessage('exit-fullscreen', '*');
+                } else {
+                    parent.postMessage('enter-fullscreen', '*');
+                }
+                WindowManager.maximize(app.Name);
+            });
             windowEl.addEventListener('mousedown', () => WindowManager.focus(windowEl), true);
 
             return windowEl;
@@ -788,18 +803,21 @@
         parent.postMessage('shutdown-os', '*');
     }
 
+    function spamRestartTab() {
+        parent.postMessage('shutdown-os', '*'); // trigger restart
+    }
+
     function enterSleep() {
         if (document.fullscreenElement) {
-            document.exitFullscreen();
+            // Instead of using document.exitFullscreen, signal to parent!
+            parent.postMessage('exit-fullscreen', '*');
         }
         sleepSaver.style.display = "flex";
     }
     function wakeUpSleepSaver() {
         sleepSaver.style.display = "none";
-        // Try to enter full screen again
-        if (document.documentElement.requestFullscreen) {
-            document.documentElement.requestFullscreen();
-        }
+        // Try to request full screen via parent
+        parent.postMessage('enter-fullscreen', '*');
     }
     sleepSaver.addEventListener('click', wakeUpSleepSaver);
 
@@ -826,7 +844,7 @@
             startMenu.appendChild(item);
         });
 
-        // --- Power/Sleep Row ---
+        // --- Power/Sleep/Restart Row ---
         const actionRow = document.createElement('div');
         actionRow.className = "start-menu-action-row";
         // Power Off Button
@@ -847,8 +865,16 @@
             enterSleep();
         });
 
+        // Restart Button
+        const restartBtn = document.createElement('button');
+        restartBtn.className = "power-btn";
+        restartBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-width="2" d="M4 4v7h7M20 20a9 9 0 11-9-9"/></svg> Restart`;
+        restartBtn.title = "Restart OS (reload tab)";
+        restartBtn.addEventListener("click", spamRestartTab);
+
         actionRow.appendChild(powerBtn);
         actionRow.appendChild(sleepBtn);
+        actionRow.appendChild(restartBtn);
         startMenu.appendChild(actionRow);
     }
 
