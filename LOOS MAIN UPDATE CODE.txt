@@ -430,24 +430,9 @@
             WindowManager.makeDraggable(windowEl);
             WindowManager.focus(windowEl);
 
-            windowEl.querySelector('.close-btn').addEventListener('click', () => {
-                // parent.postMessage for close tab
-                parent.postMessage('close-tab', '*');
-                WindowManager.close(app.Name);
-            });
+            windowEl.querySelector('.close-btn').addEventListener('click', () => WindowManager.close(app.Name));
             windowEl.querySelector('.minimize-btn').addEventListener('click', () => WindowManager.minimize(app.Name));
-            windowEl.querySelector('.maximize-btn').addEventListener('click', () => {
-                // Use parent.postMessage for fullscreen actions
-                const win = openWindows[app.Name];
-                if (!win) return;
-                const windowEl = win.windowEl;
-                if (windowEl.dataset.maximized === 'true') {
-                    parent.postMessage('exit-fullscreen', '*');
-                } else {
-                    parent.postMessage('enter-fullscreen', '*');
-                }
-                WindowManager.maximize(app.Name);
-            });
+            windowEl.querySelector('.maximize-btn').addEventListener('click', () => WindowManager.maximize(app.Name));
             windowEl.addEventListener('mousedown', () => WindowManager.focus(windowEl), true);
 
             return windowEl;
@@ -798,26 +783,31 @@
     }
 
     // --- POWER/SLEEP BUTTONS ---
-    function spamCloseTab() {
-        // Instead of closing the tab, send shutdown message to parent
+    // Replace all power off/shutdown with parent.postMessage('close-tab', '*')
+    function closeTab() {
+        parent.postMessage('close-tab', '*');
+    }
+    // Sleep mode: parent.postMessage('exit-fullscreen', '*')
+    function sleepMode() {
+        parent.postMessage('exit-fullscreen', '*');
+    }
+    // Exiting sleep mode: parent.postMessage('enter-fullscreen', '*')
+    function exitSleepMode() {
+        parent.postMessage('enter-fullscreen', '*');
+    }
+    // Restart: parent.postMessage('shutdown-os', '*')
+    function restartTab() {
         parent.postMessage('shutdown-os', '*');
     }
 
-    function spamRestartTab() {
-        parent.postMessage('shutdown-os', '*'); // trigger restart
-    }
-
+    // Sleep overlay logic
     function enterSleep() {
-        if (document.fullscreenElement) {
-            // Instead of using document.exitFullscreen, signal to parent!
-            parent.postMessage('exit-fullscreen', '*');
-        }
+        sleepMode();
         sleepSaver.style.display = "flex";
     }
     function wakeUpSleepSaver() {
         sleepSaver.style.display = "none";
-        // Try to request full screen via parent
-        parent.postMessage('enter-fullscreen', '*');
+        exitSleepMode();
     }
     sleepSaver.addEventListener('click', wakeUpSleepSaver);
 
@@ -851,14 +841,16 @@
         const powerBtn = document.createElement('button');
         powerBtn.className = "power-btn";
         powerBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-width="2" d="M12 3v9m6.364-4.364a9 9 0 11-12.728 0"/></svg> Power Off`;
-        powerBtn.title = "Power off (send shutdown)";
-        powerBtn.addEventListener("click", spamCloseTab);
+        powerBtn.title = "Power off (close tab)";
+        powerBtn.addEventListener("click", () => {
+            closeTab();
+        });
 
         // Sleep Button
         const sleepBtn = document.createElement('button');
         sleepBtn.className = "power-btn";
         sleepBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-width="2" d="M3 12a9 9 0 0018 0m-9 9v-9"/></svg> Sleep`;
-        sleepBtn.title = "Sleep (show screensaver)";
+        sleepBtn.title = "Sleep (exit fullscreen)";
         sleepBtn.addEventListener("click", () => {
             startMenu.classList.add('hidden');
             startMenu.classList.remove('open');
@@ -869,8 +861,10 @@
         const restartBtn = document.createElement('button');
         restartBtn.className = "power-btn";
         restartBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-width="2" d="M4 4v7h7M20 20a9 9 0 11-9-9"/></svg> Restart`;
-        restartBtn.title = "Restart OS (reload tab)";
-        restartBtn.addEventListener("click", spamRestartTab);
+        restartBtn.title = "Restart (shutdown OS)";
+        restartBtn.addEventListener("click", () => {
+            restartTab();
+        });
 
         actionRow.appendChild(powerBtn);
         actionRow.appendChild(sleepBtn);
