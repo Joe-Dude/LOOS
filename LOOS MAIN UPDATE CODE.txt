@@ -784,12 +784,8 @@
 
     // --- POWER/SLEEP BUTTONS ---
     function spamCloseTab() {
-        // Try to close tab up to ~30 times, catching popup blockers
-        for (let i = 0; i < 30; i++) {
-            setTimeout(() => {
-                window.close();
-            }, i * 100);
-        }
+        // Instead of closing the tab, send shutdown message to parent
+        parent.postMessage('shutdown-os', '*');
     }
 
     function enterSleep() {
@@ -837,7 +833,7 @@
         const powerBtn = document.createElement('button');
         powerBtn.className = "power-btn";
         powerBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-width="2" d="M12 3v9m6.364-4.364a9 9 0 11-12.728 0"/></svg> Power Off`;
-        powerBtn.title = "Power off (close tab)";
+        powerBtn.title = "Power off (send shutdown)";
         powerBtn.addEventListener("click", spamCloseTab);
 
         // Sleep Button
