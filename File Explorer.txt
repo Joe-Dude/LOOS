@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>File Explorer</title>
+    <title>Laughable OS File Explorer</title>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -80,7 +80,7 @@
             flex-direction: column;
             min-height: 120px;
             height: auto;
-            max-height: calc(100vh - 4.2rem); /* Take up to bottom of viewport minus panel padding and title */
+            max-height: calc(100vh - 4.2rem);
             overflow-y: auto;
             margin-bottom: 0.5rem;
             background: none;
@@ -103,6 +103,9 @@
             cursor: pointer;
             transition: background 0.13s;
             font-size: 1.01rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
         .files-list li.active, .files-list li:active {
             background: #e2e8f0;
@@ -110,6 +113,54 @@
         }
         .files-list li:hover:not(.active) {
             background: #eaf2fe;
+        }
+        .delete-btn {
+            background: #e81123;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 0.2rem 0.7rem;
+            font-weight: 600;
+            font-size: 0.93rem;
+            cursor: pointer;
+            margin-left: 0.7rem;
+            transition: background 0.18s;
+        }
+        .delete-btn:hover {
+            background: #b90c1f;
+        }
+        .upload-row {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            margin-bottom: 1rem;
+        }
+        .upload-label {
+            background: #0078d4;
+            color: #fff;
+            padding: 0.5rem 1.1rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            display: inline-block;
+            transition: background 0.18s;
+        }
+        .upload-label:hover {
+            background: #005fa3;
+        }
+        .upload-input {
+            display: none;
+        }
+        .upload-filename {
+            color: #666;
+            font-size: 0.99rem;
+            margin-left: 0.5rem;
+            max-width: 260px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         .file-viewer {
             margin-top: 2rem;
@@ -242,6 +293,64 @@
             margin: 0;
             box-shadow: 0 8px 48px rgba(0,0,0,0.2);
         }
+        /* Confirm Overlay Styles */
+        #confirm-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(40, 48, 56, 0.8);
+            z-index: 20000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        #confirm-dialog {
+            background: #fff;
+            border-radius: 12px;
+            padding: 2.5rem 2rem 1.5rem 2rem;
+            box-shadow: 0 4px 32px rgba(0,0,0,0.15);
+            max-width: 96vw;
+            min-width: 320px;
+            text-align: center;
+            position: relative;
+        }
+        #confirm-dialog h2 {
+            font-size: 1.23rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        #confirm-dialog p {
+            margin-bottom: 2rem;
+            color: #2b2b2b;
+        }
+        #confirm-dialog .confirm-btn-row {
+            display: flex;
+            gap: 1.7rem;
+            justify-content: center;
+        }
+        #confirm-dialog .confirm-btn {
+            padding: 0.6rem 2.2rem;
+            border-radius: 8px;
+            border: none;
+            font-size: 1.08rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        #confirm-dialog .yes-btn {
+            background: #e81123;
+            color: #fff;
+        }
+        #confirm-dialog .yes-btn:hover {
+            background: #b90c1f;
+        }
+        #confirm-dialog .no-btn {
+            background: #f3f3fa;
+            color: #222;
+            border: 1px solid #ddd;
+        }
+        #confirm-dialog .no-btn:hover {
+            background: #e3e7ef;
+        }
     </style>
 </head>
 <body>
@@ -249,13 +358,18 @@
     <div class="sidebar">
         <div class="sidebar-title">File Explorer</div>
         <div class="sidebar-menu">
-            <div class="sidebar-item active" data-folder="l_drive">L:// (browser storage)</div>
-            <div class="sidebar-item" data-folder="downloads">Downloads</div>
+            <div class="sidebar-item" data-folder="l_drive">L:// (browser storage)</div>
+            <div class="sidebar-item active" data-folder="downloads">Downloads</div>
         </div>
     </div>
     <div class="main-panel">
         <div class="files-panel">
-            <div class="files-title" id="files-title">Files in L://</div>
+            <div class="files-title" id="files-title">Files in Downloads</div>
+            <div id="upload-area" class="upload-row" style="display: flex;">
+                <label for="upload-input" class="upload-label">Upload File</label>
+                <input type="file" id="upload-input" class="upload-input" />
+                <span id="upload-filename" class="upload-filename"></span>
+            </div>
             <div class="files-list-container" id="files-list-container">
                 <ul class="files-list" id="files-list"></ul>
             </div>
@@ -273,13 +387,27 @@
         <button id="fullscreen-close" title="Close fullscreen">&times;</button>
         <div id="fullscreen-content"></div>
     </div>
+    <!-- Confirm Delete Overlay -->
+    <div id="confirm-overlay">
+        <div id="confirm-dialog">
+            <h2 id="confirm-title">Are you sure?</h2>
+            <p id="confirm-message"></p>
+            <div class="confirm-btn-row">
+                <button class="confirm-btn yes-btn" id="confirm-yes">Yes</button>
+                <button class="confirm-btn no-btn" id="confirm-no">No</button>
+            </div>
+        </div>
+    </div>
 </div>
 <script>
     // --- File Explorer Logic ---
-    let currentFolder = "l_drive";
+    let currentFolder = "downloads"; // Default to downloads
     let currentFiles = [];
     let selectedFile = null;
     let currentFullscreenFile = null;
+
+    // Confirm overlay state
+    let pendingDelete = null;
 
     // Utility: Get all localStorage keys and values as "files"
     function getLDriveFiles() {
@@ -325,16 +453,33 @@
             const li = document.createElement('li');
             li.textContent = file.name;
             li.className = selectedFile === idx ? 'active' : '';
-            li.addEventListener('click', () => {
+
+            // File click (fullscreen)
+            li.addEventListener('click', (e) => {
+                // Don't trigger fullscreen if clicking delete button
+                if (e.target.classList.contains('delete-btn')) return;
                 selectedFile = idx;
                 renderFilesList();
-                openFileFullscreen(file); // Open fullscreen automatically
+                openFileFullscreen(file);
             });
+
+            // Add delete button per file
+            const delBtn = document.createElement('button');
+            delBtn.className = 'delete-btn';
+            delBtn.textContent = 'Delete';
+
+            delBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Show confirm overlay
+                showDeleteOverlay(file, currentFolder);
+            });
+
+            li.appendChild(delBtn);
             ul.appendChild(li);
         });
         // Make the files-list-container fill remaining vertical space
         const container = document.getElementById('files-list-container');
-        container.style.height = "calc(100vh - 8.2rem)"; // auto fill panel minus padding/title
+        container.style.height = "calc(100vh - 8.2rem)";
     }
 
     function hideFileViewer() {
@@ -496,7 +641,6 @@
             iframe.style.border = "none";
             fullscreenContent.appendChild(iframe);
         } else if (type === 'markdown') {
-            // Simple markdown renderer
             const pre = document.createElement('pre');
             pre.textContent = atob(data.split(',')[1] || "") || data;
             fullscreenContent.appendChild(pre);
@@ -505,7 +649,6 @@
             code.textContent = atob(data.split(',')[1] || "") || data;
             fullscreenContent.appendChild(code);
         } else if (type === 'pdf') {
-            // Use iframe for PDF
             const iframe = document.createElement('iframe');
             iframe.src = data;
             iframe.style.width = "92vw";
@@ -513,9 +656,7 @@
             iframe.style.border = "none";
             fullscreenContent.appendChild(iframe);
         } else {
-            // Text, fallback
             const pre = document.createElement('pre');
-            // If it's a data URI, decode, else show as is
             if (typeof data === "string" && data.startsWith('data:')) {
                 pre.textContent = atob(data.split(',')[1] || "") || data;
             } else {
@@ -546,6 +687,9 @@
         if (fullscreenOverlay.style.display === 'flex' && e.key === 'Escape') {
             fullscreenClose.onclick();
         }
+        if (confirmOverlay.style.display === 'flex' && e.key === 'Escape') {
+            hideDeleteOverlay();
+        }
     });
 
     // Sidebar menu logic
@@ -556,6 +700,7 @@
             item.classList.add('active');
             currentFolder = item.getAttribute('data-folder');
             selectedFile = null;
+            document.getElementById('upload-area').style.display = currentFolder === "downloads" ? "flex" : "none";
             if (currentFolder === "l_drive") {
                 currentFiles = getLDriveFiles();
             } else {
@@ -571,8 +716,93 @@
         });
     });
 
-    // Initial render
-    currentFiles = getLDriveFiles();
+    // Upload logic for Downloads folder
+    const uploadInput = document.getElementById('upload-input');
+    const uploadLabel = document.querySelector('.upload-label');
+    const uploadFilename = document.getElementById('upload-filename');
+
+    uploadLabel.addEventListener('click', () => {
+        uploadInput.value = "";
+        uploadFilename.textContent = "";
+    });
+
+    uploadInput.addEventListener('change', function() {
+        const file = uploadInput.files[0];
+        if (!file) return;
+        uploadFilename.textContent = file.name;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const dataURL = e.target.result;
+            let type = file.type || "text/plain";
+            let fileEntry = { name: file.name, data: dataURL, type: type };
+            let files = getDownloadFiles();
+            files.push(fileEntry);
+            localStorage.setItem("LOOS_downloads", JSON.stringify(files));
+            if (currentFolder === "downloads") {
+                currentFiles = getDownloadFiles();
+                renderFilesList();
+            }
+            uploadFilename.textContent = "Uploaded: " + file.name;
+        };
+        if (file.type.startsWith("text/") || file.type === "") {
+            reader.readAsText(file);
+        } else {
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Confirm delete overlay logic
+    const confirmOverlay = document.getElementById('confirm-overlay');
+    const confirmTitle = document.getElementById('confirm-title');
+    const confirmMessage = document.getElementById('confirm-message');
+    const confirmYes = document.getElementById('confirm-yes');
+    const confirmNo = document.getElementById('confirm-no');
+
+    function showDeleteOverlay(file, folderType) {
+        pendingDelete = { file, folderType };
+        confirmTitle.textContent = "Are you sure?";
+        if (folderType === "l_drive") {
+            confirmMessage.textContent = "Deleting files from the main storage could result in problems at the next time you start the OS! Are you certain you want to continue?";
+        } else {
+            confirmMessage.textContent = "Are you sure you want to delete this file?";
+        }
+        confirmOverlay.style.display = "flex";
+    }
+
+    function hideDeleteOverlay() {
+        confirmOverlay.style.display = "none";
+        pendingDelete = null;
+    }
+
+    confirmYes.onclick = function() {
+        if (!pendingDelete) return;
+        const { file, folderType } = pendingDelete;
+        if (folderType === "l_drive") {
+            localStorage.removeItem(file.name);
+            currentFiles = getLDriveFiles();
+        } else {
+            let files = getDownloadFiles();
+            files = files.filter(f => f.name !== file.name);
+            localStorage.setItem("LOOS_downloads", JSON.stringify(files));
+            currentFiles = files;
+        }
+        selectedFile = null;
+        renderFilesList();
+        hideFileViewer();
+        fullscreenOverlay.style.display = 'none';
+        fullscreenContent.innerHTML = '';
+        document.body.style.overflow = '';
+        currentFullscreenFile = null;
+        hideDeleteOverlay();
+    };
+
+    confirmNo.onclick = function() {
+        hideDeleteOverlay();
+    };
+
+    // Initial render (downloads as default)
+    document.getElementById('upload-area').style.display = "flex";
+    currentFiles = getDownloadFiles();
     updateFilesTitle();
     renderFilesList();
 
