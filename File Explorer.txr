@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>File Explorer</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f4fa;
+            color: #222;
+            margin: 0;
+            padding: 0;
+        }
+        .explorer-root {
+            display: flex;
+            min-height: 100vh;
+            height: 100vh;
+        }
+        .sidebar {
+            background: #fff;
+            border-right: 1px solid #e3e7ef;
+            width: 190px;
+            padding-top: 1.2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .sidebar-title {
+            font-size: 1.07rem;
+            font-weight: 700;
+            margin-bottom: 1.7rem;
+            text-align: center;
+        }
+        .sidebar-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+        .sidebar-item {
+            padding: 0.7rem 1rem;
+            border-radius: 8px;
+            font-size: 1.05rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.16s;
+            margin: 0 0.5rem;
+        }
+        .sidebar-item.active {
+            background: #e3e7ef;
+            color: #0078d4;
+        }
+        .sidebar-item:not(.active):hover {
+            background: #f3f3fa;
+        }
+        .main-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            background: #f7f9fc;
+            min-height: 0;
+        }
+        .files-panel {
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            padding: 1.3rem 2.2rem 1.3rem 2.2rem;
+            flex: 1;
+            min-width: 0;
+        }
+        .files-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.6rem;
+        }
+        .files-list-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            min-height: 120px;
+            height: auto;
+            max-height: calc(100vh - 4.2rem); /* Take up to bottom of viewport minus panel padding and title */
+            overflow-y: auto;
+            margin-bottom: 0.5rem;
+            background: none;
+        }
+        .files-list {
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #e3e7ef;
+            padding: 1rem;
+            min-height: 120px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.03);
+            list-style: none;
+            margin: 0;
+            width: 100%;
+        }
+        .files-list li {
+            margin-bottom: 0.4rem;
+            padding: 0.45rem 0.9rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.13s;
+            font-size: 1.01rem;
+        }
+        .files-list li.active, .files-list li:active {
+            background: #e2e8f0;
+            color: #0078d4;
+        }
+        .files-list li:hover:not(.active) {
+            background: #eaf2fe;
+        }
+        .file-viewer {
+            margin-top: 2rem;
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #e3e7ef;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            padding: 1.3rem;
+            min-height: 170px;
+            max-width: 100%;
+        }
+        .file-viewer-title {
+            font-size: 1.07rem;
+            font-weight: 600;
+            margin-bottom: 1.1rem;
+        }
+        .file-viewer pre {
+            background: #f3f3fa;
+            border-radius: 6px;
+            padding: 0.7rem;
+            font-size: 0.97rem;
+            max-height: 350px;
+            overflow-x: auto;
+            word-break: break-all;
+        }
+        .file-viewer img {
+            max-width: 240px;
+            max-height: 200px;
+            border-radius: 7px;
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid #e3e7ef;
+        }
+        .file-viewer video {
+            max-width: 340px;
+            max-height: 200px;
+            border-radius: 7px;
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid #e3e7ef;
+            background: #000;
+        }
+        .download-btn, .fullscreen-btn {
+            background: #0078d4;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 0.4rem 1.1rem;
+            font-weight: 500;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            margin-right: 0.5rem;
+        }
+        .download-btn:hover, .fullscreen-btn:hover {
+            background: #005fa3;
+        }
+        #fullscreen-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(20, 24, 32, 0.97);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        #fullscreen-content {
+            max-width: 98vw;
+            max-height: 98vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        #fullscreen-close {
+            position: absolute;
+            top: 24px;
+            right: 32px;
+            background: #222;
+            color: #fff;
+            border: none;
+            border-radius: 18px;
+            font-size: 2rem;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            z-index: 10010;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #fullscreen-download {
+            position: absolute;
+            top: 24px;
+            left: 32px;
+            background: #0078d4;
+            color: #fff;
+            border: none;
+            border-radius: 18px;
+            font-size: 1.3rem;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            z-index: 10010;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.18s;
+        }
+        #fullscreen-download:hover {
+            background: #005fa3;
+        }
+        #fullscreen-content img, #fullscreen-content iframe, #fullscreen-content video {
+            max-width: 96vw;
+            max-height: 92vh;
+            border-radius: 10px;
+            box-shadow: 0 8px 48px rgba(0,0,0,0.2);
+            background: #fff;
+        }
+        #fullscreen-content pre, #fullscreen-content code {
+            background: #1e293b;
+            color: #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            padding: 1.2rem;
+            max-width: 92vw;
+            max-height: 90vh;
+            overflow: auto;
+            margin: 0;
+            box-shadow: 0 8px 48px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+<div class="explorer-root">
+    <div class="sidebar">
+        <div class="sidebar-title">File Explorer</div>
+        <div class="sidebar-menu">
+            <div class="sidebar-item active" data-folder="l_drive">L:// (browser storage)</div>
+            <div class="sidebar-item" data-folder="downloads">Downloads</div>
+        </div>
+    </div>
+    <div class="main-panel">
+        <div class="files-panel">
+            <div class="files-title" id="files-title">Files in L://</div>
+            <div class="files-list-container" id="files-list-container">
+                <ul class="files-list" id="files-list"></ul>
+            </div>
+            <div class="file-viewer" id="file-viewer" style="display:none;">
+                <div class="file-viewer-title" id="file-viewer-title"></div>
+                <div id="file-viewer-content"></div>
+                <button class="download-btn" id="download-btn" style="display:none;">Download</button>
+                <button class="fullscreen-btn" id="fullscreen-btn" style="display:none;">Open Fullscreen</button>
+            </div>
+        </div>
+    </div>
+    <!-- Fullscreen Overlay -->
+    <div id="fullscreen-overlay">
+        <button id="fullscreen-download" title="Download">&#8681;</button>
+        <button id="fullscreen-close" title="Close fullscreen">&times;</button>
+        <div id="fullscreen-content"></div>
+    </div>
+</div>
+<script>
+    // --- File Explorer Logic ---
+    let currentFolder = "l_drive";
+    let currentFiles = [];
+    let selectedFile = null;
+    let currentFullscreenFile = null;
+
+    // Utility: Get all localStorage keys and values as "files"
+    function getLDriveFiles() {
+        const files = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            const value = localStorage.getItem(key);
+            files.push({ name: key, value });
+        }
+        return files;
+    }
+
+    // Utility: Downloads folder logic
+    function getDownloadFiles() {
+        const key = "LOOS_downloads";
+        const raw = localStorage.getItem(key);
+        if (!raw) return [];
+        try {
+            const files = JSON.parse(raw);
+            if (Array.isArray(files)) return files;
+        } catch(e) {}
+        return [];
+    }
+
+    function updateFilesTitle() {
+        const title = document.getElementById('files-title');
+        if (currentFolder === "l_drive") {
+            title.textContent = "Files in L://";
+        } else {
+            title.textContent = "Files in Downloads";
+        }
+    }
+
+    function renderFilesList() {
+        const ul = document.getElementById('files-list');
+        ul.innerHTML = '';
+        if (currentFiles.length === 0) {
+            ul.innerHTML = "<li style='color:#888;'>No files found.</li>";
+            hideFileViewer();
+            return;
+        }
+        currentFiles.forEach((file, idx) => {
+            const li = document.createElement('li');
+            li.textContent = file.name;
+            li.className = selectedFile === idx ? 'active' : '';
+            li.addEventListener('click', () => {
+                selectedFile = idx;
+                renderFilesList();
+                openFileFullscreen(file); // Open fullscreen automatically
+            });
+            ul.appendChild(li);
+        });
+        // Make the files-list-container fill remaining vertical space
+        const container = document.getElementById('files-list-container');
+        container.style.height = "calc(100vh - 8.2rem)"; // auto fill panel minus padding/title
+    }
+
+    function hideFileViewer() {
+        document.getElementById('file-viewer').style.display = 'none';
+    }
+
+    // Download helper
+    function downloadFile(name, data, type) {
+        let blob;
+        if (type === "image" || type === "video") {
+            blob = dataURItoBlob(data);
+        } else {
+            blob = new Blob([data], { type: "text/plain" });
+        }
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }, 100);
+    }
+
+    function dataURItoBlob(dataURI) {
+        const byteString = atob(dataURI.split(',')[1]);
+        const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+        const ab = new ArrayBuffer(byteString.length);
+        const ia = new Uint8Array(ab);
+        for (let i = 0; i < byteString.length; i++) {
+            ia[i] = byteString.charCodeAt(i);
+        }
+        return new Blob([ab], { type: mimeString });
+    }
+
+    // File type detection and rendering
+    function detectFileType(file) {
+        // Returns {type, data, name}
+        let type = 'text', data = '', name = '';
+        if (currentFolder === "l_drive") {
+            name = file.name;
+            if (typeof file.value === 'string') {
+                if (file.value.startsWith('data:image/')) {
+                    type = 'image'; data = file.value;
+                } else if (file.value.startsWith('data:video/')) {
+                    type = 'video'; data = file.value;
+                } else if (file.value.startsWith('data:text/html')) {
+                    type = 'html'; data = file.value;
+                } else if (file.value.startsWith('data:application/pdf')) {
+                    type = 'pdf'; data = file.value;
+                } else if (file.value.startsWith('data:text/markdown')) {
+                    type = 'markdown'; data = file.value;
+                } else if (file.value.startsWith('data:text/csv')) {
+                    type = 'csv'; data = file.value;
+                } else if (file.value.startsWith('data:application/json')) {
+                    type = 'json'; data = file.value;
+                } else if (file.value.startsWith('data:application/javascript') || file.value.startsWith('data:text/javascript')) {
+                    type = 'js'; data = file.value;
+                } else if (file.value.startsWith('data:text/css')) {
+                    type = 'css'; data = file.value;
+                } else if (file.value.startsWith('data:text/plain')) {
+                    type = 'text'; data = file.value;
+                } else if (file.value.startsWith('data:')) {
+                    type = 'text'; data = file.value;
+                } else {
+                    // Try file extension
+                    if (/\.(png|jpg|jpeg|gif|webp)$/i.test(file.name)) {
+                        type = 'image'; data = file.value;
+                    } else if (/\.(mp4|webm|ogg)$/i.test(file.name)) {
+                        type = 'video'; data = file.value;
+                    } else if (/\.(pdf)$/i.test(file.name)) {
+                        type = 'pdf'; data = file.value;
+                    } else if (/\.(md)$/i.test(file.name)) {
+                        type = 'markdown'; data = file.value;
+                    } else if (/\.(csv)$/i.test(file.name)) {
+                        type = 'csv'; data = file.value;
+                    } else if (/\.(json)$/i.test(file.name)) {
+                        type = 'json'; data = file.value;
+                    } else if (/\.(js)$/i.test(file.name)) {
+                        type = 'js'; data = file.value;
+                    } else if (/\.(css)$/i.test(file.name)) {
+                        type = 'css'; data = file.value;
+                    } else if (/\.(html)$/i.test(file.name)) {
+                        type = 'html'; data = file.value;
+                    } else {
+                        type = 'text'; data = file.value;
+                    }
+                }
+            }
+        } else { // Downloads folder
+            name = file.name;
+            if (file.type && typeof file.data === 'string') {
+                if (file.type.startsWith('image')) {
+                    type = 'image'; data = file.data;
+                } else if (file.type.startsWith('video')) {
+                    type = 'video'; data = file.data;
+                } else if (file.type.startsWith('application/pdf')) {
+                    type = 'pdf'; data = file.data;
+                } else if (file.type.startsWith('text/html')) {
+                    type = 'html'; data = file.data;
+                } else if (file.type.startsWith('text/markdown')) {
+                    type = 'markdown'; data = file.data;
+                } else if (file.type.startsWith('text/csv')) {
+                    type = 'csv'; data = file.data;
+                } else if (file.type.startsWith('application/json')) {
+                    type = 'json'; data = file.data;
+                } else if (file.type.startsWith('application/javascript') || file.type.startsWith('text/javascript')) {
+                    type = 'js'; data = file.data;
+                } else if (file.type.startsWith('text/css')) {
+                    type = 'css'; data = file.data;
+                } else if (file.type.startsWith('text/plain')) {
+                    type = 'text'; data = file.data;
+                } else {
+                    type = 'text'; data = file.data;
+                }
+            } else {
+                type = 'text'; data = file.data;
+            }
+        }
+        return { type, data, name };
+    }
+
+    // Fullscreen embed logic
+    const fullscreenOverlay = document.getElementById('fullscreen-overlay');
+    const fullscreenContent = document.getElementById('fullscreen-content');
+    const fullscreenClose = document.getElementById('fullscreen-close');
+    const fullscreenDownload = document.getElementById('fullscreen-download');
+
+    function openFileFullscreen(file) {
+        const { type, data, name } = detectFileType(file);
+        currentFullscreenFile = { name, data, type };
+        openFullscreenEmbed(type, data, name);
+    }
+
+    function openFullscreenEmbed(type, data, name) {
+        fullscreenContent.innerHTML = '';
+        if (type === 'image') {
+            const img = document.createElement('img');
+            img.src = data;
+            img.alt = name;
+            fullscreenContent.appendChild(img);
+        } else if (type === 'video') {
+            const video = document.createElement('video');
+            video.src = data;
+            video.controls = true;
+            video.autoplay = true;
+            fullscreenContent.appendChild(video);
+        } else if (type === 'html') {
+            const iframe = document.createElement('iframe');
+            if (data.startsWith('data:text/html')) {
+                iframe.srcdoc = atob(data.split(',')[1]);
+            } else {
+                iframe.srcdoc = data;
+            }
+            iframe.style.width = "92vw";
+            iframe.style.height = "88vh";
+            iframe.style.border = "none";
+            fullscreenContent.appendChild(iframe);
+        } else if (type === 'markdown') {
+            // Simple markdown renderer
+            const pre = document.createElement('pre');
+            pre.textContent = atob(data.split(',')[1] || "") || data;
+            fullscreenContent.appendChild(pre);
+        } else if (type === 'csv' || type === 'json' || type === 'js' || type === 'css') {
+            const code = document.createElement('pre');
+            code.textContent = atob(data.split(',')[1] || "") || data;
+            fullscreenContent.appendChild(code);
+        } else if (type === 'pdf') {
+            // Use iframe for PDF
+            const iframe = document.createElement('iframe');
+            iframe.src = data;
+            iframe.style.width = "92vw";
+            iframe.style.height = "88vh";
+            iframe.style.border = "none";
+            fullscreenContent.appendChild(iframe);
+        } else {
+            // Text, fallback
+            const pre = document.createElement('pre');
+            // If it's a data URI, decode, else show as is
+            if (typeof data === "string" && data.startsWith('data:')) {
+                pre.textContent = atob(data.split(',')[1] || "") || data;
+            } else {
+                pre.textContent = data;
+            }
+            fullscreenContent.appendChild(pre);
+        }
+        fullscreenOverlay.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    fullscreenClose.onclick = () => {
+        fullscreenOverlay.style.display = 'none';
+        fullscreenContent.innerHTML = '';
+        document.body.style.overflow = '';
+        currentFullscreenFile = null;
+    };
+
+    fullscreenDownload.onclick = () => {
+        if (!currentFullscreenFile) return;
+        let type = currentFullscreenFile.type;
+        let name = currentFullscreenFile.name;
+        let data = currentFullscreenFile.data;
+        downloadFile(name, data, type);
+    };
+
+    document.addEventListener('keydown', function(e) {
+        if (fullscreenOverlay.style.display === 'flex' && e.key === 'Escape') {
+            fullscreenClose.onclick();
+        }
+    });
+
+    // Sidebar menu logic
+    const sidebarItems = document.querySelectorAll('.sidebar-item');
+    sidebarItems.forEach(item => {
+        item.addEventListener('click', () => {
+            sidebarItems.forEach(it => it.classList.remove('active'));
+            item.classList.add('active');
+            currentFolder = item.getAttribute('data-folder');
+            selectedFile = null;
+            if (currentFolder === "l_drive") {
+                currentFiles = getLDriveFiles();
+            } else {
+                currentFiles = getDownloadFiles();
+            }
+            updateFilesTitle();
+            renderFilesList();
+            hideFileViewer();
+            fullscreenOverlay.style.display = 'none';
+            fullscreenContent.innerHTML = '';
+            document.body.style.overflow = '';
+            currentFullscreenFile = null;
+        });
+    });
+
+    // Initial render
+    currentFiles = getLDriveFiles();
+    updateFilesTitle();
+    renderFilesList();
+
+    // Optional: expose downloads API for other apps
+    window.LOOS_Downloads = {
+        getFiles: getDownloadFiles,
+        addFile: function(name, data, type="text/plain") {
+            let files = getDownloadFiles();
+            files.push({ name, data, type });
+            localStorage.setItem("LOOS_downloads", JSON.stringify(files));
+            if (currentFolder === "downloads") {
+                currentFiles = getDownloadFiles();
+                renderFilesList();
+            }
+        },
+        removeFile: function(name) {
+            let files = getDownloadFiles();
+            files = files.filter(f => f.name !== name);
+            localStorage.setItem("LOOS_downloads", JSON.stringify(files));
+            if (currentFolder === "downloads") {
+                currentFiles = getDownloadFiles();
+                renderFilesList();
+            }
+        }
+    };
+</script>
+</body>
+</html>
