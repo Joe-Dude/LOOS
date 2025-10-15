@@ -16,7 +16,7 @@ Embed: 'https://raw.githubusercontent.com/Joe-Dude/LOOS/main/Browser.lol Search 
 [
 Name: 'File Explorer',
 Desc: 'Manage all your files with ease, from files on Laughable OS to external files.',
-Icon: 'https://raw.githubusercontent.com/Joe-Dude/LOOS/main/',
+Icon: 'https://raw.githubusercontent.com/Joe-Dude/LOOS/main/File Explorer Icon.png',
 Ss: '',
 Embed: 'https://raw.githubusercontent.com/Joe-Dude/LOOS/main/File Explorer.txt',
 ]
