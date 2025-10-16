@@ -726,7 +726,17 @@
         uploadFilename.textContent = "";
     });
 
+    uploadInput.addEventListener('click', function() {
+        // Exit Laughable OS fullscreen before showing file picker
+        parent.postMessage('exit-fullscreen', '*');
+    });
+
     uploadInput.addEventListener('change', function() {
+        // After the upload overlay closes (file selected or cancelled), re-enter fullscreen
+        setTimeout(function() {
+            parent.postMessage('enter-fullscreen', '*');
+        }, 200);
+
         const file = uploadInput.files[0];
         if (!file) return;
         uploadFilename.textContent = file.name;
