@@ -2,933 +2,826 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laughable OS</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Laughable OS File Explorer</title>
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f0f2f5;
-            overflow: hidden;
-            user-select: none;
-        }
-        .desktop {
-            background-color: #003366;
-            background-size: cover;
-            background-position: center;
-        }
-        .taskbar {
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            background-color: rgba(255, 255, 255, 0.7);
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-            z-index: 5000;
-        }
-        .start-menu {
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            background-color: rgba(255, 255, 255, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
-            transform: translateY(20px);
-            opacity: 0;
-            pointer-events: none;
-            z-index: 5001;
-        }
-        .start-menu.open {
-            transform: translateY(0);
-            opacity: 1;
-            pointer-events: auto;
-        }
-        .window {
-            min-width: 320px;
-            min-height: 240px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(200, 200, 200, 0.5);
-            resize: both;
-            overflow: auto;
-            background-color: #fdfdfd;
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            position: absolute;
-            transition: top 0.2s ease-in-out, left 0.2s ease-in-out, width 0.2s ease-in-out, height 0.2s ease-in-out, border-radius 0.2s ease-in-out;
-        }
-        .title-bar {
-            background-color: #e9e9e9;
-            padding: 6px 10px;
-            cursor: move;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-top-left-radius: 8px;
-            border-top-right-radius: 8px;
-            border-bottom: 1px solid #dcdcdc;
-            flex-shrink: 0;
-        }
-        .title-bar-text {
-             font-weight: 500;
-             color: #333;
-        }
-        .title-bar-controls {
-            display: flex;
-        }
-        .title-bar-controls button {
-            width: 28px;
-            height: 28px;
-            border: none;
-            background-color: transparent;
-            font-size: 18px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 4px;
-        }
-         .title-bar-controls button:hover {
-            background-color: rgba(0,0,0,0.1);
-        }
-        .title-bar-controls .close-btn:hover {
-            background-color: #e81123;
-            color: white;
-        }
-        .window-body {
-            flex-grow: 1;
-            padding: 0;
-            margin: 0;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-         .window-body iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-        .tray-icon {
-            cursor: pointer;
-            padding: 4px;
-            border-radius: 4px;
-        }
-        .tray-icon:hover {
-            background-color: rgba(0,0,0,0.1);
-        }
-        .volume-slider-popup {
-            backdrop-filter: blur(10px);
-            background-color: rgba(255, 255, 255, 0.85);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-            z-index: 5001;
-        }
-        input[type=range] { -webkit-appearance: none; appearance: none; width: 120px; height: 6px; background: #d3d3d3; outline: none; opacity: 0.7; transition: opacity .2s; border-radius: 3px; }
-        input[type=range]:hover { opacity: 1; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 18px; height: 18px; background: #0078d4; cursor: pointer; border-radius: 50%; }
-        input[type=range]::-moz-range-thumb { width: 18px, height: 18px; background: #0078d4; cursor: pointer; border-radius: 50%; }
-        .desktop-icon {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 80px;
-            padding: 8px;
-            border-radius: 6px;
-            cursor: pointer;
-            text-align: center;
-            color: white;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
-        }
-        .desktop-icon:hover {
-            background-color: rgba(255, 255, 255, 0.15);
-        }
-        .desktop-icon img {
-            width: 48px;
-            height: 48px;
-            margin-bottom: 4px;
-        }
-        .desktop-icon span {
-            font-size: 13px;
-            line-height: 1.2;
-            word-break: break-word;
-        }
-        .app-store-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            gap: 1.5rem;
-        }
-        .app-store-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            padding: 0.5rem;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .app-store-item:hover {
-            background-color: rgba(0,0,0,0.05);
-        }
-        .app-store-item img {
-            width: 64px;
-            height: 64px;
-            margin-bottom: 0.5rem;
-        }
-        .taskbar-app {
-            padding: 4px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            border-bottom: 2px solid transparent;
-        }
-        .taskbar-app.active {
-            background-color: rgba(0, 120, 215, 0.2);
-            border-bottom: 2px solid #0078d7;
-        }
-        .taskbar-app:not(.active):hover {
-            background-color: rgba(0,0,0,0.1);
-        }
-        .taskbar-app img {
-            width: 24px;
-            height: 24px;
-        }
-        .start-menu-app-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.5rem;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-        .start-menu-app-item:hover {
-            background-color: rgba(0,0,0,0.1);
-        }
-        .start-menu-app-item img {
-            width: 32px;
-            height: 32px;
-        }
-        /* --- Power menu styles --- */
-        .start-menu-action-row {
-            display: flex;
-            justify-content: flex-end;
-            gap: 1rem;
-            margin-top: 1rem;
-            border-top: 1px solid #e5e7eb;
-            padding-top: 1rem;
-        }
-        .power-btn {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1.2rem;
-            font-weight: 500;
-            font-size: 1rem;
-            border-radius: 6px;
-            border: none;
-            background: #f3f4f6;
+            background: #f0f4fa;
             color: #222;
+            margin: 0;
+            padding: 0;
+        }
+        .explorer-root {
+            display: flex;
+            min-height: 100vh;
+            height: 100vh;
+        }
+        .sidebar {
+            background: #fff;
+            border-right: 1px solid #e3e7ef;
+            width: 190px;
+            padding-top: 1.2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .sidebar-title {
+            font-size: 1.07rem;
+            font-weight: 700;
+            margin-bottom: 1.7rem;
+            text-align: center;
+        }
+        .sidebar-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+        .sidebar-item {
+            padding: 0.7rem 1rem;
+            border-radius: 8px;
+            font-size: 1.05rem;
+            font-weight: 500;
             cursor: pointer;
+            transition: background 0.16s;
+            margin: 0 0.5rem;
+        }
+        .sidebar-item.active {
+            background: #e3e7ef;
+            color: #0078d4;
+        }
+        .sidebar-item:not(.active):hover {
+            background: #f3f3fa;
+        }
+        .main-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            background: #f7f9fc;
+            min-height: 0;
+        }
+        .files-panel {
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            padding: 1.3rem 2.2rem 1.3rem 2.2rem;
+            flex: 1;
+            min-width: 0;
+        }
+        .files-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.6rem;
+        }
+        .files-list-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            min-height: 120px;
+            height: auto;
+            max-height: calc(100vh - 4.2rem);
+            overflow-y: auto;
+            margin-bottom: 0.5rem;
+            background: none;
+        }
+        .files-list {
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #e3e7ef;
+            padding: 1rem;
+            min-height: 120px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.03);
+            list-style: none;
+            margin: 0;
+            width: 100%;
+        }
+        .files-list li {
+            margin-bottom: 0.4rem;
+            padding: 0.45rem 0.9rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.13s;
+            font-size: 1.01rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .files-list li.active, .files-list li:active {
+            background: #e2e8f0;
+            color: #0078d4;
+        }
+        .files-list li:hover:not(.active) {
+            background: #eaf2fe;
+        }
+        .delete-btn {
+            background: #e81123;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 0.2rem 0.7rem;
+            font-weight: 600;
+            font-size: 0.93rem;
+            cursor: pointer;
+            margin-left: 0.7rem;
             transition: background 0.18s;
         }
-        .power-btn:hover {
-            background: #e5e7eb;
+        .delete-btn:hover {
+            background: #b90c1f;
         }
-        /* --- Sleep screen styles --- */
-        #sleep-saver {
+        .upload-row {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            margin-bottom: 1rem;
+        }
+        .upload-label {
+            background: #0078d4;
+            color: #fff;
+            padding: 0.5rem 1.1rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            display: inline-block;
+            transition: background 0.18s;
+        }
+        .upload-label:hover {
+            background: #005fa3;
+        }
+        .upload-input {
+            display: none;
+        }
+        .upload-filename {
+            color: #666;
+            font-size: 0.99rem;
+            margin-left: 0.5rem;
+            max-width: 260px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .file-viewer {
+            margin-top: 2rem;
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #e3e7ef;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            padding: 1.3rem;
+            min-height: 170px;
+            max-width: 100%;
+        }
+        .file-viewer-title {
+            font-size: 1.07rem;
+            font-weight: 600;
+            margin-bottom: 1.1rem;
+        }
+        .file-viewer pre {
+            background: #f3f3fa;
+            border-radius: 6px;
+            padding: 0.7rem;
+            font-size: 0.97rem;
+            max-height: 350px;
+            overflow-x: auto;
+            word-break: break-all;
+        }
+        .file-viewer img {
+            max-width: 240px;
+            max-height: 200px;
+            border-radius: 7px;
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid #e3e7ef;
+        }
+        .file-viewer video {
+            max-width: 340px;
+            max-height: 200px;
+            border-radius: 7px;
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid #e3e7ef;
+            background: #000;
+        }
+        .download-btn, .fullscreen-btn {
+            background: #0078d4;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 0.4rem 1.1rem;
+            font-weight: 500;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            margin-right: 0.5rem;
+        }
+        .download-btn:hover, .fullscreen-btn:hover {
+            background: #005fa3;
+        }
+        #fullscreen-overlay {
             position: fixed;
             inset: 0;
-            z-index: 99999;
-            background: #000;
-            color: #fff;
+            background: rgba(20, 24, 32, 0.97);
+            z-index: 10000;
             display: none;
             align-items: center;
             justify-content: center;
-            flex-direction: column;
-            font-size: 2.2rem;
-            user-select: none;
-            cursor: pointer;
         }
-        #sleep-saver .wake-text {
-            font-size: 2.2rem;
-            font-weight: bold;
+        #fullscreen-content {
+            max-width: 98vw;
+            max-height: 98vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        #fullscreen-close {
+            position: absolute;
+            top: 24px;
+            right: 32px;
+            background: #222;
+            color: #fff;
+            border: none;
+            border-radius: 18px;
+            font-size: 2rem;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            z-index: 10010;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #fullscreen-download {
+            position: absolute;
+            top: 24px;
+            left: 32px;
+            background: #0078d4;
+            color: #fff;
+            border: none;
+            border-radius: 18px;
+            font-size: 1.3rem;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            z-index: 10010;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.18s;
+        }
+        #fullscreen-download:hover {
+            background: #005fa3;
+        }
+        #fullscreen-content img, #fullscreen-content iframe, #fullscreen-content video {
+            max-width: 96vw;
+            max-height: 92vh;
+            border-radius: 10px;
+            box-shadow: 0 8px 48px rgba(0,0,0,0.2);
+            background: #fff;
+        }
+        #fullscreen-content pre, #fullscreen-content code {
+            background: #1e293b;
+            color: #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            padding: 1.2rem;
+            max-width: 92vw;
+            max-height: 90vh;
+            overflow: auto;
+            margin: 0;
+            box-shadow: 0 8px 48px rgba(0,0,0,0.2);
+        }
+        /* Confirm Overlay Styles */
+        #confirm-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(40, 48, 56, 0.8);
+            z-index: 20000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        #confirm-dialog {
+            background: #fff;
+            border-radius: 12px;
+            padding: 2.5rem 2rem 1.5rem 2rem;
+            box-shadow: 0 4px 32px rgba(0,0,0,0.15);
+            max-width: 96vw;
+            min-width: 320px;
             text-align: center;
-            padding: 2rem;
-            text-shadow: 0 0 16px #000;
+            position: relative;
+        }
+        #confirm-dialog h2 {
+            font-size: 1.23rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        #confirm-dialog p {
+            margin-bottom: 2rem;
+            color: #2b2b2b;
+        }
+        #confirm-dialog .confirm-btn-row {
+            display: flex;
+            gap: 1.7rem;
+            justify-content: center;
+        }
+        #confirm-dialog .confirm-btn {
+            padding: 0.6rem 2.2rem;
+            border-radius: 8px;
+            border: none;
+            font-size: 1.08rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        #confirm-dialog .yes-btn {
+            background: #e81123;
+            color: #fff;
+        }
+        #confirm-dialog .yes-btn:hover {
+            background: #b90c1f;
+        }
+        #confirm-dialog .no-btn {
+            background: #f3f3fa;
+            color: #222;
+            border: 1px solid #ddd;
+        }
+        #confirm-dialog .no-btn:hover {
+            background: #e3e7ef;
         }
     </style>
 </head>
-<body class="h-screen w-screen flex flex-col">
-
-    <div id="desktop" class="desktop flex-grow relative p-4 flex flex-col flex-wrap content-start items-start gap-2"></div>
-    <div id="start-menu" class="start-menu fixed bottom-16 left-4 w-full max-w-sm h-auto max-h-[60vh] p-4 rounded-lg flex-col gap-1 hidden overflow-y-auto"></div>
-    <div id="volume-slider-popup" class="volume-slider-popup fixed bottom-16 right-16 p-4 rounded-lg hidden">
-        <input type="range" id="volume-slider" min="0" max="100" value="75" class="slider">
-    </div>
-    <div class="taskbar w-full h-14 flex-shrink-0 flex justify-between items-center px-4">
-        <!-- ... (your existing taskbar unchanged) ... -->
-        <div class="flex items-center space-x-2">
-            <button id="start-button" class="p-2 rounded-full hover:bg-white/50">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="text-blue-600"><path d="M3,2H21C21.55,2 22,2.45 22,3V21C22,21.55 21.55,22 21,22H3C2.45,22 2,21.55 2,21V3C2,2.45 2.45,2 3,2M11,11H3V3H11V11M21,11H13V3H21V11M11,21H3V13H11V21M21,21H13V13H21V21Z" /></svg>
-            </button>
-            <div class="relative w-64">
-                <input type="text" placeholder="Search" class="w-full pl-10 pr-4 py-1.5 rounded-full bg-white/50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm">
-                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-            </div>
+<body>
+<div class="explorer-root">
+    <div class="sidebar">
+        <div class="sidebar-title">File Explorer</div>
+        <div class="sidebar-menu">
+            <div class="sidebar-item" data-folder="l_drive">L:// (browser storage)</div>
+            <div class="sidebar-item active" data-folder="downloads">Downloads</div>
         </div>
-        <div id="taskbar-apps" class="flex items-center gap-2"></div>
-        <div class="flex items-center space-x-2">
-            <div class="flex items-center space-x-4 text-sm text-gray-800">
-                <div class="flex items-center space-x-2">
-                    <div id="wifi-icon-container" class="tray-icon">
-                        <svg id="wifi-on" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.288 15.038a5.25 5.25 0 017.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 011.06 0z" /></svg>
-                        <svg id="wifi-off" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 hidden"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3l18 18M8.288 15.038a5.25 5.25 0 017.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 011.06 0z" /></svg>
-                    </div>
-                    <div id="speaker-icon-container" class="tray-icon">
-                        <svg id="speaker-high" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" /></svg>
-                        <svg id="speaker-low" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 hidden"><path stroke-linecap="round" stroke-linejoin="round" d="M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" /></svg>
-                        <svg id="speaker-muted" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 hidden"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 9.75L19.5 12m0 0l2.25 2.25M19.5 12l2.25-2.25M19.5 12l-2.25 2.25m-10.5-6l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" /></svg>
-                    </div>
-                </div>
-                <div id="clock" class="text-right">
-                    <div id="time"></div>
-                    <div id="date" class="text-xs"></div>
-                </div>
+    </div>
+    <div class="main-panel">
+        <div class="files-panel">
+            <div class="files-title" id="files-title">Files in Downloads</div>
+            <div id="upload-area" class="upload-row" style="display: flex;">
+                <label for="upload-input" class="upload-label">Upload File</label>
+                <input type="file" id="upload-input" class="upload-input" />
+                <span id="upload-filename" class="upload-filename"></span>
+            </div>
+            <div class="files-list-container" id="files-list-container">
+                <ul class="files-list" id="files-list"></ul>
+            </div>
+            <div class="file-viewer" id="file-viewer" style="display:none;">
+                <div class="file-viewer-title" id="file-viewer-title"></div>
+                <div id="file-viewer-content"></div>
+                <button class="download-btn" id="download-btn" style="display:none;">Download</button>
+                <button class="fullscreen-btn" id="fullscreen-btn" style="display:none;">Open Fullscreen</button>
             </div>
         </div>
     </div>
-    <!-- Sleep overlay -->
-    <div id="sleep-saver">
-        <span class="wake-text">Click to wake up</span>
+    <!-- Fullscreen Overlay -->
+    <div id="fullscreen-overlay">
+        <button id="fullscreen-download" title="Download">&#8681;</button>
+        <button id="fullscreen-close" title="Close fullscreen">&times;</button>
+        <div id="fullscreen-content"></div>
     </div>
+    <!-- Confirm Delete Overlay -->
+    <div id="confirm-overlay">
+        <div id="confirm-dialog">
+            <h2 id="confirm-title">Are you sure?</h2>
+            <p id="confirm-message"></p>
+            <div class="confirm-btn-row">
+                <button class="confirm-btn yes-btn" id="confirm-yes">Yes</button>
+                <button class="confirm-btn no-btn" id="confirm-no">No</button>
+            </div>
+        </div>
+    </div>
+</div>
 <script>
-    // --- DOM Elements ---
-    const desktop = document.getElementById('desktop');
-    const startButton = document.getElementById('start-button');
-    const startMenu = document.getElementById('start-menu');
-    const taskbarAppsContainer = document.getElementById('taskbar-apps');
-    const wifiOn = document.getElementById('wifi-on');
-    const wifiOff = document.getElementById('wifi-off');
-    const speakerIconContainer = document.getElementById('speaker-icon-container');
-    const volumeSliderPopup = document.getElementById('volume-slider-popup');
-    const volumeSlider = document.getElementById('volume-slider');
-    const speakerHigh = document.getElementById('speaker-high');
-    const speakerLow = document.getElementById('speaker-low');
-    const speakerMuted = document.getElementById('speaker-muted');
-    const timeElement = document.getElementById('time');
-    const dateElement = document.getElementById('date');
-    const sleepSaver = document.getElementById('sleep-saver');
+    // --- File Explorer Logic ---
+    let currentFolder = "downloads"; // Default to downloads
+    let currentFiles = [];
+    let selectedFile = null;
+    let currentFullscreenFile = null;
+    let expectingFilePicker = false; // Flag to track if the file picker was opened
 
-    // --- State & Constants ---
-    const APP_STORE_URL = 'https://raw.githubusercontent.com/Joe-Dude/LOOS/main/LOOS.txt';
-    const APP_STORE_ICON_URL = 'https://raw.githubusercontent.com/Joe-Dude/LOOS/main/Laughable%20OS%20Icon.png';
-    const APP_STORE_ICON_KEY = 'laughable_os_store_icon';
-    let highestZIndex = 100;
-    let openWindows = {};
-    let allAppsCache = [];
-    let appStoreIconBase64 = null;
+    // Confirm overlay state
+    let pendingDelete = null;
 
-    // --- Icon Caching Logic ---
-    async function cacheAppStoreIcon() {
-        const cached = localStorage.getItem(APP_STORE_ICON_KEY);
-        if (cached) {
-            appStoreIconBase64 = cached;
-            return cached;
+    // Utility: Get all localStorage keys and values as "files"
+    function getLDriveFiles() {
+        const files = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            const value = localStorage.getItem(key);
+            files.push({ name: key, value });
         }
+        return files;
+    }
+
+    // Utility: Downloads folder logic
+    function getDownloadFiles() {
+        const key = "LOOS_downloads";
+        const raw = localStorage.getItem(key);
+        if (!raw) return [];
         try {
-            const response = await fetch(APP_STORE_ICON_URL);
-            const blob = await response.blob();
-            const base64 = await new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result);
-                reader.onerror = reject;
-                reader.readAsDataURL(blob);
-            });
-            appStoreIconBase64 = base64;
-            localStorage.setItem(APP_STORE_ICON_KEY, base64);
-            return base64;
-        } catch (e) {
-            appStoreIconBase64 = APP_STORE_ICON_URL;
-            return APP_STORE_ICON_URL;
+            const files = JSON.parse(raw);
+            if (Array.isArray(files)) return files;
+        } catch(e) {}
+        return [];
+    }
+
+    function updateFilesTitle() {
+        const title = document.getElementById('files-title');
+        if (currentFolder === "l_drive") {
+            title.textContent = "Files in L://";
+        } else {
+            title.textContent = "Files in Downloads";
         }
     }
-    (async () => { await cacheAppStoreIcon(); })();
 
-    // --- Core OS Functions ---
-    const AppDB = {
-        getInstalledApps: () => {
-            try {
-                const apps = localStorage.getItem('laughable_os_apps');
-                return apps ? JSON.parse(apps) : [];
-            } catch (e) {
-                console.error("Failed to parse apps from localStorage", e);
-                return [];
-            }
-        },
-        saveInstalledApps: (apps) => {
-            localStorage.setItem('laughable_os_apps', JSON.stringify(apps));
-        },
-        installApp: (app) => {
-            const apps = AppDB.getInstalledApps();
-            if (!apps.find(a => a.Name === app.Name)) {
-                apps.push(app);
-                AppDB.saveInstalledApps(apps);
-            }
-        },
-        uninstallApp: (appName) => {
-            let apps = AppDB.getInstalledApps();
-            apps = apps.filter(a => a.Name !== appName);
-            AppDB.saveInstalledApps(apps);
+    function renderFilesList() {
+        const ul = document.getElementById('files-list');
+        ul.innerHTML = '';
+        if (currentFiles.length === 0) {
+            ul.innerHTML = "<li style='color:#888;'>No files found.</li>";
+            hideFileViewer();
+            return;
         }
-    };
+        currentFiles.forEach((file, idx) => {
+            const li = document.createElement('li');
+            li.textContent = file.name;
+            li.className = selectedFile === idx ? 'active' : '';
 
-    const WindowManager = {
-        create: (app) => {
-            if (openWindows[app.Name]) {
-                const win = openWindows[app.Name];
-                win.windowEl.style.display = 'flex';
-                WindowManager.focus(win.windowEl);
-                return win.windowEl;
-            }
-
-            const windowEl = document.createElement('div');
-            windowEl.className = 'window';
-            windowEl.style.left = `${Math.random() * 200 + 50}px`;
-            windowEl.style.top = `${Math.random() * 100 + 50}px`;
-            windowEl.style.width = app.isStore ? '640px' : '480px';
-            windowEl.style.height = app.isStore ? '480px' : '320px';
-
-            windowEl.innerHTML = `
-                <div class="title-bar">
-                    <span class="title-bar-text">${app.Name}</span>
-                    <div class="title-bar-controls">
-                        <button class="minimize-btn" title="Minimize">
-                           <svg width="12" height="12" viewBox="0 0 12 12"><rect fill="currentColor" width="10" height="1" x="1" y="6"></rect></svg>
-                        </button>
-                        <button class="maximize-btn" title="Maximize">
-                           <svg class="maximize-icon" width="12" height="12" viewBox="0 0 12 12"><rect width="9" height="9" x="1.5" y="1.5" fill="none" stroke="currentColor" stroke-width="1"></rect></svg>
-                           <svg class="restore-icon hidden" width="12" height="12" viewBox="0 0 12 12"><path d="M3.5 0.5H10.5V7.5H7.5V10.5H0.5V3.5H3.5V0.5Z M3.5 3.5V7.5H7.5V3.5H3.5Z" stroke="currentColor" stroke-width="1" fill="none"></path></svg>
-                        </button>
-                        <button class="close-btn" title="Close">&times;</button>
-                    </div>
-                </div>
-                <div class="window-body">
-                    ${app.isStore ? '<div class="app-store-container w-full h-full flex flex-col"></div>' : '<iframe srcdoc=""></iframe>'}
-                </div>
-            `;
-            
-            desktop.appendChild(windowEl);
-            
-            const taskbarEl = WindowManager.createTaskbarIcon(app, windowEl);
-            taskbarAppsContainer.appendChild(taskbarEl);
-            openWindows[app.Name] = { windowEl, taskbarEl };
-
-            if (!app.isStore) {
-                const iframe = windowEl.querySelector('iframe');
-                iframe.srcdoc = app.code;
-            }
-            
-            WindowManager.makeDraggable(windowEl);
-            WindowManager.focus(windowEl);
-
-            windowEl.querySelector('.close-btn').addEventListener('click', () => WindowManager.close(app.Name));
-            windowEl.querySelector('.minimize-btn').addEventListener('click', () => WindowManager.minimize(app.Name));
-            windowEl.querySelector('.maximize-btn').addEventListener('click', () => WindowManager.maximize(app.Name));
-            windowEl.addEventListener('mousedown', () => WindowManager.focus(windowEl), true);
-
-            return windowEl;
-        },
-        
-        createTaskbarIcon: (app, windowEl) => {
-            const taskbarEl = document.createElement('div');
-            taskbarEl.className = 'taskbar-app';
-            taskbarEl.title = app.Name;
-            taskbarEl.innerHTML = `<img src="${app.Icon}" alt="${app.Name}">`;
-            
-            taskbarEl.addEventListener('click', () => {
-                if (windowEl.style.display === 'none' || !taskbarEl.classList.contains('active')) {
-                    windowEl.style.display = 'flex';
-                    WindowManager.focus(windowEl);
-                } else {
-                    WindowManager.minimize(app.Name);
-                }
+            // File click (fullscreen)
+            li.addEventListener('click', (e) => {
+                // Don't trigger fullscreen if clicking delete button
+                if (e.target.classList.contains('delete-btn')) return;
+                selectedFile = idx;
+                renderFilesList();
+                openFileFullscreen(file);
             });
-            return taskbarEl;
-        },
 
-        minimize: (appName) => {
-            const win = openWindows[appName];
-            if (win) {
-                win.windowEl.style.display = 'none';
-                win.taskbarEl.classList.remove('active');
+            // Add delete button per file
+            const delBtn = document.createElement('button');
+            delBtn.className = 'delete-btn';
+            delBtn.textContent = 'Delete';
+
+            delBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Show confirm overlay
+                showDeleteOverlay(file, currentFolder);
+            });
+
+            li.appendChild(delBtn);
+            ul.appendChild(li);
+        });
+        // Make the files-list-container fill remaining vertical space
+        const container = document.getElementById('files-list-container');
+        container.style.height = "calc(100vh - 8.2rem)";
+    }
+
+    function hideFileViewer() {
+        document.getElementById('file-viewer').style.display = 'none';
+    }
+
+    // Download helper
+    function downloadFile(name, data, type) {
+        let blob;
+        if (type === "image" || type === "video" || data.startsWith('data:')) {
+            blob = dataURItoBlob(data);
+        } else {
+            blob = new Blob([data], { type: "text/plain" });
+        }
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }, 100);
+    }
+
+    function dataURItoBlob(dataURI) {
+        const byteString = atob(dataURI.split(',')[1]);
+        const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+        const ab = new ArrayBuffer(byteString.length);
+        const ia = new Uint8Array(ab);
+        for (let i = 0; i < byteString.length; i++) {
+            ia[i] = byteString.charCodeAt(i);
+        }
+        return new Blob([ab], { type: mimeString });
+    }
+
+    // File type detection and rendering
+    function detectFileType(file) {
+        // Returns {type, data, name}
+        let type = 'text', data = '', name = '';
+        if (currentFolder === "l_drive") {
+            name = file.name;
+            if (typeof file.value === 'string') {
+                if (file.value.startsWith('data:image/')) {
+                    type = 'image'; data = file.value;
+                } else if (file.value.startsWith('data:video/')) {
+                    type = 'video'; data = file.value;
+                } else if (file.value.startsWith('data:text/html')) {
+                    type = 'html'; data = file.value;
+                } else if (file.value.startsWith('data:application/pdf')) {
+                    type = 'pdf'; data = file.value;
+                } else if (file.value.startsWith('data:text/markdown')) {
+                    type = 'markdown'; data = file.value;
+                } else if (file.value.startsWith('data:text/csv')) {
+                    type = 'csv'; data = file.value;
+                } else if (file.value.startsWith('data:application/json')) {
+                    type = 'json'; data = file.value;
+                } else if (file.value.startsWith('data:application/javascript') || file.value.startsWith('data:text/javascript')) {
+                    type = 'js'; data = file.value;
+                } else if (file.value.startsWith('data:text/css')) {
+                    type = 'css'; data = file.value;
+                } else if (file.value.startsWith('data:text/plain')) {
+                    type = 'text'; data = file.value;
+                } else if (file.value.startsWith('data:')) {
+                    type = 'text'; data = file.value;
+                } else {
+                    type = 'text'; data = file.value;
+                }
             }
-        },
-
-        maximize: (appName) => {
-            const win = openWindows[appName];
-            if (!win) return;
-            const windowEl = win.windowEl;
-            const maximizeBtn = windowEl.querySelector('.maximize-btn');
-            const maxIcon = maximizeBtn.querySelector('.maximize-icon');
-            const restoreIcon = maximizeBtn.querySelector('.restore-icon');
-
-            if (windowEl.dataset.maximized === 'true') {
-                windowEl.style.top = windowEl.dataset.oldTop;
-                windowEl.style.left = windowEl.dataset.oldLeft;
-                windowEl.style.width = windowEl.dataset.oldWidth;
-                windowEl.style.height = windowEl.dataset.oldHeight;
-                windowEl.style.borderRadius = '';
-                windowEl.dataset.maximized = 'false';
-                maxIcon.classList.remove('hidden');
-                restoreIcon.classList.add('hidden');
+        } else { // Downloads folder
+            name = file.name;
+            if (file.type && typeof file.data === 'string') {
+                if (file.type.startsWith('image')) {
+                    type = 'image'; data = file.data;
+                } else if (file.type.startsWith('video')) {
+                    type = 'video'; data = file.data;
+                } else if (file.type.startsWith('application/pdf')) {
+                    type = 'pdf'; data = file.data;
+                } else if (file.type.startsWith('text/html')) {
+                    type = 'html'; data = file.data;
+                } else if (file.type.startsWith('text/markdown')) {
+                    type = 'markdown'; data = file.data;
+                } else if (file.type.startsWith('text/csv')) {
+                    type = 'csv'; data = file.data;
+                } else if (file.type.startsWith('application/json')) {
+                    type = 'json'; data = file.data;
+                } else if (file.type.startsWith('application/javascript') || file.type.startsWith('text/javascript')) {
+                    type = 'js'; data = file.data;
+                } else if (file.type.startsWith('text/css')) {
+                    type = 'css'; data = file.data;
+                } else if (file.type.startsWith('text/plain')) {
+                    type = 'text'; data = file.data;
+                } else {
+                    type = 'text'; data = file.data;
+                }
             } else {
-                windowEl.dataset.oldTop = windowEl.style.top;
-                windowEl.dataset.oldLeft = windowEl.style.left;
-                windowEl.dataset.oldWidth = windowEl.style.width;
-                windowEl.dataset.oldHeight = windowEl.style.height;
-
-                windowEl.style.top = '0px';
-                windowEl.style.left = '0px';
-                windowEl.style.width = `${desktop.clientWidth}px`;
-                windowEl.style.height = `${desktop.clientHeight}px`;
-                windowEl.style.borderRadius = '0px';
-                windowEl.dataset.maximized = 'true';
-                maxIcon.classList.add('hidden');
-                restoreIcon.classList.remove('hidden');
+                type = 'text'; data = file.data;
             }
-        },
-
-        close: (appName) => {
-            const win = openWindows[appName];
-            if (win) {
-                win.windowEl.remove();
-                win.taskbarEl.remove();
-                delete openWindows[appName];
-            }
-        },
-        
-        focus: (windowEl) => {
-            highestZIndex++;
-            windowEl.style.zIndex = highestZIndex;
-            Object.values(openWindows).forEach(win => {
-                win.taskbarEl.classList.toggle('active', win.windowEl === windowEl);
-            });
-        },
-        
-        makeDraggable: (windowEl) => {
-            const titleBar = windowEl.querySelector('.title-bar');
-            let isDragging = false;
-            let offsetX, offsetY;
-
-            titleBar.addEventListener('mousedown', (e) => {
-                if (e.target.closest('button') || windowEl.dataset.maximized === 'true') return;
-                isDragging = true;
-                offsetX = e.clientX - windowEl.getBoundingClientRect().left;
-                offsetY = e.clientY - windowEl.getBoundingClientRect().top;
-                windowEl.style.userSelect = 'none';
-                WindowManager.focus(windowEl);
-            });
-
-            document.addEventListener('mousemove', (e) => {
-                if (isDragging) {
-                    windowEl.style.left = `${e.clientX - offsetX}px`;
-                    windowEl.style.top = `${e.clientY - offsetY}px`;
-                }
-            });
-
-            document.addEventListener('mouseup', () => {
-                isDragging = false;
-                windowEl.style.userSelect = 'auto';
-            });
         }
+        return { type, data, name };
+    }
+
+    // Fullscreen embed logic
+    const fullscreenOverlay = document.getElementById('fullscreen-overlay');
+    const fullscreenContent = document.getElementById('fullscreen-content');
+    const fullscreenClose = document.getElementById('fullscreen-close');
+    const fullscreenDownload = document.getElementById('fullscreen-download');
+
+    function openFileFullscreen(file) {
+        const { type, data, name } = detectFileType(file);
+        currentFullscreenFile = { name, data, type };
+        openFullscreenEmbed(type, data, name);
+    }
+
+    function openFullscreenEmbed(type, data, name) {
+        fullscreenContent.innerHTML = '';
+        if (type === 'image') {
+            const img = document.createElement('img');
+            img.src = data;
+            img.alt = name;
+            fullscreenContent.appendChild(img);
+        } else if (type === 'video') {
+            const video = document.createElement('video');
+            video.src = data;
+            video.controls = true;
+            video.autoplay = true;
+            fullscreenContent.appendChild(video);
+        } else if (type === 'html') {
+            const iframe = document.createElement('iframe');
+            if (data.startsWith('data:text/html')) {
+                iframe.srcdoc = atob(data.split(',')[1]);
+            } else {
+                iframe.srcdoc = data;
+            }
+            iframe.style.width = "92vw";
+            iframe.style.height = "88vh";
+            iframe.style.border = "none";
+            fullscreenContent.appendChild(iframe);
+        } else if (type === 'markdown' || type === 'csv' || type === 'json' || type === 'js' || type === 'css' || type === 'text') {
+             const pre = document.createElement('pre');
+             if (typeof data === "string" && data.startsWith('data:')) {
+                // Decode base64 data URI if present
+                try {
+                    pre.textContent = atob(data.split(',')[1] || "");
+                } catch(e) {
+                    pre.textContent = "Error decoding file content.";
+                }
+            } else {
+                pre.textContent = data;
+            }
+            fullscreenContent.appendChild(pre);
+        } else if (type === 'pdf') {
+            const iframe = document.createElement('iframe');
+            iframe.src = data;
+            iframe.style.width = "92vw";
+            iframe.style.height = "88vh";
+            iframe.style.border = "none";
+            fullscreenContent.appendChild(iframe);
+        }
+        fullscreenOverlay.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    fullscreenClose.onclick = () => {
+        fullscreenOverlay.style.display = 'none';
+        fullscreenContent.innerHTML = '';
+        document.body.style.overflow = '';
+        currentFullscreenFile = null;
     };
 
-    function getAppStoreData() {
-        return {
-            Name: "Laughable Apps",
-            Icon: appStoreIconBase64 || APP_STORE_ICON_URL,
-            Desc: "Find and install new apps.",
-            isStore: true
+    fullscreenDownload.onclick = () => {
+        if (!currentFullscreenFile) return;
+        let { name, data, type } = currentFullscreenFile;
+        downloadFile(name, data, type);
+    };
+
+    document.addEventListener('keydown', function(e) {
+        if (fullscreenOverlay.style.display === 'flex' && e.key === 'Escape') {
+            fullscreenClose.onclick();
+        }
+        if (confirmOverlay.style.display === 'flex' && e.key === 'Escape') {
+            hideDeleteOverlay();
+        }
+    });
+
+    // Sidebar menu logic
+    const sidebarItems = document.querySelectorAll('.sidebar-item');
+    sidebarItems.forEach(item => {
+        item.addEventListener('click', () => {
+            sidebarItems.forEach(it => it.classList.remove('active'));
+            item.classList.add('active');
+            currentFolder = item.getAttribute('data-folder');
+            selectedFile = null;
+            document.getElementById('upload-area').style.display = currentFolder === "downloads" ? "flex" : "none";
+            if (currentFolder === "l_drive") {
+                currentFiles = getLDriveFiles();
+            } else {
+                currentFiles = getDownloadFiles();
+            }
+            updateFilesTitle();
+            renderFilesList();
+            hideFileViewer();
+        });
+    });
+
+    // Upload logic for Downloads folder
+    const uploadInput = document.getElementById('upload-input');
+    const uploadLabel = document.querySelector('.upload-label');
+    const uploadFilename = document.getElementById('upload-filename');
+
+    uploadLabel.addEventListener('click', () => {
+        uploadInput.value = "";
+        uploadFilename.textContent = "";
+    });
+
+    uploadInput.addEventListener('click', function() {
+        // The browser will exit fullscreen automatically.
+        // We set a flag to handle re-entry when focus returns.
+        expectingFilePicker = true;
+    });
+
+    // This handles re-entering fullscreen if the user cancels the file dialog
+    window.addEventListener('focus', () => {
+        if (expectingFilePicker) {
+            // A short delay helps ensure the transition is smooth
+            setTimeout(() => {
+                parent.postMessage('enter-fullscreen', '*');
+            }, 200);
+            expectingFilePicker = false;
+        }
+    });
+
+    uploadInput.addEventListener('change', function() {
+        // A file was selected, so the 'focus' handler is no longer needed for this action
+        expectingFilePicker = false;
+        
+        const file = uploadInput.files[0];
+        if (!file) return;
+
+        uploadFilename.textContent = file.name;
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            const dataResult = e.target.result;
+            const type = file.type || "text/plain";
+            const fileEntry = { name: file.name, data: dataResult, type: type };
+
+            let files = getDownloadFiles();
+            files.push(fileEntry);
+            localStorage.setItem("LOOS_downloads", JSON.stringify(files));
+
+            if (currentFolder === "downloads") {
+                currentFiles = getDownloadFiles();
+                renderFilesList();
+            }
+            uploadFilename.textContent = "Uploaded: " + file.name;
+            // We still re-enter fullscreen here for the successful upload case
+            parent.postMessage('enter-fullscreen', '*');
         };
-    }
 
-    function renderDesktopIcons() {
-        desktop.querySelectorAll('.desktop-icon').forEach(icon => icon.remove());
-        const appStoreIcon = createDesktopIcon(getAppStoreData());
-        appStoreIcon.addEventListener('click', openAppStore);
-        desktop.appendChild(appStoreIcon);
-
-        const installedApps = AppDB.getInstalledApps();
-        installedApps.forEach(app => {
-            const appIcon = createDesktopIcon(app);
-            appIcon.addEventListener('click', () => WindowManager.create(app));
-            desktop.appendChild(appIcon);
-        });
-    }
-
-    function createDesktopIcon(app) {
-        const iconEl = document.createElement('div');
-        iconEl.className = 'desktop-icon';
-        iconEl.innerHTML = `
-            <img src="${app.Icon}" alt="${app.Name}">
-            <span>${app.Name}</span>
-        `;
-        return iconEl;
-    }
-
-    // --- App Store Logic ---
-    async function openAppStore() {
-        if (!appStoreIconBase64) await cacheAppStoreIcon();
-        const storeWindow = WindowManager.create(getAppStoreData());
-        const contentArea = storeWindow.querySelector('.app-store-container');
-        if (!navigator.onLine) {
-            contentArea.innerHTML = `<div class="flex flex-col items-center justify-center h-full text-center p-8">
-                    <img src="${appStoreIconBase64 || APP_STORE_ICON_URL}" class="w-24 h-24 mb-4 rounded-xl border" alt="Laughable Apps">
-                    <h2 class="text-2xl font-bold mb-2">Laughable Apps</h2>
-                    <p class="text-red-600 font-semibold">Laughable Apps can't be used offline.</p>
-                </div>`;
-            return;
-        }
-        contentArea.innerHTML = '<p class="p-4">Loading apps...</p>';
-        try {
-            if (allAppsCache.length === 0) {
-                 const response = await fetch(APP_STORE_URL);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                const rawText = await response.text();
-                allAppsCache = parseAppText(rawText);
-            }
-            renderAppStoreShell(contentArea, allAppsCache);
-        } catch (error) {
-            console.error("Could not fetch or parse app store data:", error);
-            contentArea.innerHTML = `<p class="text-red-500 p-4">Error loading app store.</p>`;
-        }
-    }
-    
-    // --- MULTIPLE SCREENSHOT SUPPORT ---
-    function parseAppText(rawText) {
-        const apps = [];
-        const cleanedText = rawText.trim().slice(1, -1).trim();
-        const appBlocks = cleanedText.split('[').filter(block => block.trim() !== '');
-
-        for (const block of appBlocks) {
-            const appData = {};
-            const content = block.trim().slice(0, -1).trim();
-            const lines = content.split('\n');
-            for (const line of lines) {
-                const trimmedLine = line.trim();
-                if (trimmedLine) {
-                    const separatorIndex = trimmedLine.indexOf(':');
-                    if (separatorIndex > -1) {
-                        const key = trimmedLine.substring(0, separatorIndex).trim();
-                        let value = trimmedLine.substring(separatorIndex + 1).trim();
-                        if (value.endsWith(',')) value = value.slice(0, -1).trim();
-                        if ((value.startsWith("'") && value.endsWith("'")) || (value.startsWith('"') && value.endsWith('"'))) {
-                            value = value.slice(1, -1);
-                        }
-                        // --- Support for multiple screenshots ---
-                        if (key === "Ss") {
-                            value = value.split(',').map(v => v.trim()).filter(Boolean);
-                        }
-                        appData[key] = value;
-                    }
-                }
-            }
-            if (Object.keys(appData).length > 0) apps.push(appData);
-        }
-        return apps;
-    }
-
-    function renderAppStoreShell(container, apps) {
-        container.innerHTML = `
-            <div class="p-4 border-b flex items-center gap-4 flex-shrink-0">
-                 <button id="app-store-back-btn" class="hidden p-2 rounded-full hover:bg-gray-200">&larr;</button>
-                 <div class="relative flex-grow">
-                    <input type="text" id="app-search-bar" placeholder="Search apps..." class="w-full pl-10 pr-4 py-2 rounded-full bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400">
-                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                 </div>
-            </div>
-            <div id="app-store-content" class="flex-grow overflow-y-auto p-6"></div>
-        `;
-        
-        const contentDiv = container.querySelector('#app-store-content');
-        const searchBar = container.querySelector('#app-search-bar');
-        const backBtn = container.querySelector('#app-store-back-btn');
-
-        renderAppGridView(contentDiv, apps);
-
-        searchBar.addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase();
-            const filteredApps = allAppsCache.filter(app => 
-                app.Name.toLowerCase().includes(searchTerm) || app.Desc.toLowerCase().includes(searchTerm)
-            );
-            renderAppGridView(contentDiv, filteredApps);
-            backBtn.classList.add('hidden');
-        });
-
-        backBtn.addEventListener('click', () => {
-             renderAppGridView(contentDiv, allAppsCache);
-             searchBar.value = '';
-             backBtn.classList.add('hidden');
-        });
-    }
-
-    function renderAppGridView(container, apps) {
-        container.innerHTML = '';
-        const grid = document.createElement('div');
-        grid.className = 'app-store-grid';
-
-        if(apps.length === 0) {
-            container.innerHTML = '<p class="text-gray-500">No apps found.</p>';
-            return;
-        }
-
-        apps.forEach(app => {
-            const item = document.createElement('div');
-            item.className = 'app-store-item';
-            item.innerHTML = `
-                <img src="${app.Icon}" alt="${app.Name}" class="rounded-lg bg-gray-200">
-                <span class="font-semibold text-sm">${app.Name}</span>
-            `;
-            item.addEventListener('click', () => renderAppDetailView(container.closest('.app-store-container'), app));
-            grid.appendChild(item);
-        });
-        container.appendChild(grid);
-    }
-
-    // --- MULTIPLE SCREENSHOT RENDERING ---
-    function renderAppDetailView(mainContainer, app) {
-        const contentDiv = mainContainer.querySelector('#app-store-content');
-        mainContainer.querySelector('#app-store-back-btn').classList.remove('hidden');
-        let screenshotsHTML = '';
-        if (Array.isArray(app.Ss) && app.Ss.length > 0) {
-            screenshotsHTML = app.Ss.map(url =>
-                `<img src="${url}" class="max-h-48 rounded-lg border" alt="Screenshot">`
-            ).join('');
-        } else if (typeof app.Ss === 'string' && app.Ss) {
-            screenshotsHTML = `<img src="${app.Ss}" class="max-h-48 rounded-lg border" alt="Screenshot">`;
+        if (file.type.startsWith("text/") || !file.type) {
+            reader.readAsText(file);
         } else {
-            screenshotsHTML = `<span class="text-gray-400">No screenshots</span>`;
-        }
-
-        contentDiv.innerHTML = `
-            <div class="flex flex-col gap-6">
-                <div class="flex items-center gap-4">
-                    <img src="${app.Icon}" class="w-24 h-24 rounded-2xl bg-gray-200" alt="${app.Name}">
-                    <div class="flex-grow">
-                        <h2 class="font-bold text-3xl">${app.Name}</h2>
-                        <div class="mt-2 flex gap-2">
-                            <button class="install-btn px-6 py-2 text-base font-semibold rounded-full bg-blue-500 hover:bg-blue-600 text-white">Install</button>
-                            <button class="uninstall-btn px-6 py-2 text-base font-semibold rounded-full bg-red-500 hover:bg-red-600 text-white">Uninstall</button>
-                        </div>
-                    </div>
-                </div>
-                <div>
-                    <h3 class="font-semibold text-lg mb-2 border-b pb-1">Description</h3>
-                    <p class="text-gray-700">${app.Desc}</p>
-                </div>
-                <div>
-                     <h3 class="font-semibold text-lg mb-2 border-b pb-1">Screenshots</h3>
-                     <div class="flex gap-4 overflow-x-auto">
-                        ${screenshotsHTML}
-                     </div>
-                </div>
-            </div>
-        `;
-        
-        const installBtn = contentDiv.querySelector('.install-btn');
-        const uninstallBtn = contentDiv.querySelector('.uninstall-btn');
-
-        const updateButtons = () => {
-            const isAppInstalled = AppDB.getInstalledApps().some(a => a.Name === app.Name);
-            installBtn.style.display = isAppInstalled ? 'none' : 'block';
-            uninstallBtn.style.display = isAppInstalled ? 'block' : 'none';
-        };
-        updateButtons();
-
-        installBtn.addEventListener('click', async (e) => {
-            const button = e.target;
-            button.textContent = 'Installing...';
-            button.disabled = true;
-            try {
-                const code = await fetch(app.Embed).then(res => res.text());
-                const iconBlob = await fetch(app.Icon).then(res => res.blob());
-                const iconBase64 = await new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onloadend = () => resolve(reader.result);
-                    reader.onerror = reject;
-                    reader.readAsDataURL(iconBlob);
-                });
-                const appDataToStore = { Name: app.Name, Desc: app.Desc, Icon: iconBase64, code: code };
-                AppDB.installApp(appDataToStore);
-                renderDesktopIcons();
-                renderStartMenu();
-                updateButtons();
-            } catch (error) {
-                console.error(`Failed to install ${app.Name}:`, error);
-                button.textContent = 'Failed';
-            } finally {
-                button.disabled = false;
-                button.textContent = 'Install';
-            }
-        });
-
-        uninstallBtn.addEventListener('click', () => {
-            AppDB.uninstallApp(app.Name);
-            renderDesktopIcons();
-            renderStartMenu();
-            if (openWindows[app.Name]) {
-                WindowManager.close(app.Name);
-            }
-            updateButtons();
-        });
-    }
-
-    // --- POWER/SLEEP BUTTONS ---
-    // Replace all power off/shutdown with parent.postMessage('close-tab', '*')
-    function closeTab() {
-        parent.postMessage('close-tab', '*');
-    }
-    // Sleep mode: parent.postMessage('exit-fullscreen', '*')
-    function sleepMode() {
-        parent.postMessage('exit-fullscreen', '*');
-    }
-    // Exiting sleep mode: parent.postMessage('enter-fullscreen', '*')
-    function exitSleepMode() {
-        parent.postMessage('enter-fullscreen', '*');
-    }
-    // Restart: parent.postMessage('shutdown-os', '*')
-    function restartTab() {
-        parent.postMessage('shutdown-os', '*');
-    }
-
-    // Sleep overlay logic
-    function enterSleep() {
-        sleepMode();
-        sleepSaver.style.display = "flex";
-    }
-    function wakeUpSleepSaver() {
-        sleepSaver.style.display = "none";
-        exitSleepMode();
-    }
-    sleepSaver.addEventListener('click', wakeUpSleepSaver);
-
-    function renderStartMenu() {
-        startMenu.innerHTML = '';
-        const allApps = [getAppStoreData(), ...AppDB.getInstalledApps()];
-        
-        allApps.forEach(app => {
-            const item = document.createElement('div');
-            item.className = 'start-menu-app-item';
-            item.innerHTML = `
-                <img src="${app.Icon}" alt="${app.Name}">
-                <span>${app.Name}</span>
-            `;
-            item.addEventListener('click', () => {
-                if (app.isStore) {
-                    openAppStore();
-                } else {
-                    WindowManager.create(app);
-                }
-                startMenu.classList.add('hidden');
-                startMenu.classList.remove('open');
-            });
-            startMenu.appendChild(item);
-        });
-
-        // --- Power/Sleep/Restart Row ---
-        const actionRow = document.createElement('div');
-        actionRow.className = "start-menu-action-row";
-        // Power Off Button
-        const powerBtn = document.createElement('button');
-        powerBtn.className = "power-btn";
-        powerBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-width="2" d="M12 3v9m6.364-4.364a9 9 0 11-12.728 0"/></svg> Power Off`;
-        powerBtn.title = "Power off (close tab)";
-        powerBtn.addEventListener("click", () => {
-            closeTab();
-        });
-
-        // Sleep Button
-        const sleepBtn = document.createElement('button');
-        sleepBtn.className = "power-btn";
-        sleepBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-width="2" d="M3 12a9 9 0 0018 0m-9 9v-9"/></svg> Sleep`;
-        sleepBtn.title = "Sleep (exit fullscreen)";
-        sleepBtn.addEventListener("click", () => {
-            startMenu.classList.add('hidden');
-            startMenu.classList.remove('open');
-            enterSleep();
-        });
-
-        // Restart Button
-        const restartBtn = document.createElement('button');
-        restartBtn.className = "power-btn";
-        restartBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-width="2" d="M4 4v7h7M20 20a9 9 0 11-9-9"/></svg> Restart`;
-        restartBtn.title = "Restart (shutdown OS)";
-        restartBtn.addEventListener("click", () => {
-            restartTab();
-        });
-
-        actionRow.appendChild(powerBtn);
-        actionRow.appendChild(sleepBtn);
-        actionRow.appendChild(restartBtn);
-        startMenu.appendChild(actionRow);
-    }
-
-    startButton.addEventListener('click', (e) => {
-        e.stopPropagation();
-        startMenu.classList.toggle('hidden');
-        startMenu.classList.toggle('open');
-    });
-
-    speakerIconContainer.addEventListener('click', (e) => {
-        e.stopPropagation();
-        volumeSliderPopup.classList.toggle('hidden');
-    });
-    
-    document.addEventListener('click', (e) => {
-        if (!startMenu.contains(e.target) && !startButton.contains(e.target)) {
-            startMenu.classList.add('hidden');
-            startMenu.classList.remove('open');
-        }
-        if (!volumeSliderPopup.contains(e.target) && !speakerIconContainer.contains(e.target)) {
-            volumeSliderPopup.classList.add('hidden');
+            reader.readAsDataURL(file);
         }
     });
 
-    function updateWifiStatus() {
-        if (navigator.onLine) {
-            wifiOn.classList.remove('hidden');
-            wifiOff.classList.add('hidden');
+    // Confirm delete overlay logic
+    const confirmOverlay = document.getElementById('confirm-overlay');
+    const confirmTitle = document.getElementById('confirm-title');
+    const confirmMessage = document.getElementById('confirm-message');
+    const confirmYes = document.getElementById('confirm-yes');
+    const confirmNo = document.getElementById('confirm-no');
+
+    function showDeleteOverlay(file, folderType) {
+        pendingDelete = { file, folderType };
+        confirmTitle.textContent = "Are you sure?";
+        if (folderType === "l_drive") {
+            confirmMessage.textContent = "Deleting files from the main storage could result in problems at the next time you start the OS! Are you certain you want to continue?";
         } else {
-            wifiOn.classList.add('hidden');
-            wifiOff.classList.remove('hidden');
+            confirmMessage.textContent = "Are you sure you want to delete this file?";
         }
-    }
-    
-    volumeSlider.addEventListener('input', (e) => {
-        const value = parseInt(e.target.value, 10);
-        [speakerHigh, speakerLow, speakerMuted].forEach(el => el.classList.add('hidden'));
-        if (value === 0) speakerMuted.classList.remove('hidden');
-        else if (value <= 50) speakerLow.classList.remove('hidden');
-        else speakerHigh.classList.remove('hidden');
-    });
-
-    function updateClock() {
-        const now = new Date();
-        timeElement.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
-        dateElement.textContent = now.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
-    }
-    
-    async function init() {
-        await cacheAppStoreIcon();
-        renderDesktopIcons();
-        renderStartMenu();
-        window.addEventListener('online', updateWifiStatus);
-        window.addEventListener('offline', updateWifiStatus);
-        updateWifiStatus();
-        setInterval(updateClock, 1000);
-        updateClock();
+        confirmOverlay.style.display = "flex";
     }
 
-    init();
+    function hideDeleteOverlay() {
+        confirmOverlay.style.display = "none";
+        pendingDelete = null;
+    }
+
+    confirmYes.onclick = function() {
+        if (!pendingDelete) return;
+        const { file, folderType } = pendingDelete;
+        if (folderType === "l_drive") {
+            localStorage.removeItem(file.name);
+            currentFiles = getLDriveFiles();
+        } else {
+            let files = getDownloadFiles();
+            files = files.filter(f => f.name !== file.name);
+            localStorage.setItem("LOOS_downloads", JSON.stringify(files));
+            currentFiles = files;
+        }
+        selectedFile = null;
+        renderFilesList();
+        hideFileViewer();
+        hideDeleteOverlay();
+    };
+
+    confirmNo.onclick = function() {
+        hideDeleteOverlay();
+    };
+
+    // Initial render (downloads as default)
+    document.getElementById('upload-area').style.display = "flex";
+    currentFiles = getDownloadFiles();
+    updateFilesTitle();
+    renderFilesList();
+
+    // Optional: expose downloads API for other apps
+    window.LOOS_Downloads = {
+        getFiles: getDownloadFiles,
+        addFile: function(name, data, type="text/plain") {
+            let files = getDownloadFiles();
+            files.push({ name, data, type });
+            localStorage.setItem("LOOS_downloads", JSON.stringify(files));
+            if (currentFolder === "downloads") {
+                currentFiles = getDownloadFiles();
+                renderFilesList();
+            }
+        },
+        removeFile: function(name) {
+            let files = getDownloadFiles();
+            files = files.filter(f => f.name !== name);
+            localStorage.setItem("LOOS_downloads", JSON.stringify(files));
+            if (currentFolder === "downloads") {
+                currentFiles = getDownloadFiles();
+                renderFilesList();
+            }
+        }
+    };
 </script>
 </body>
 </html>
