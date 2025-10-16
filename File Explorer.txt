@@ -381,13 +381,11 @@
             </div>
         </div>
     </div>
-    <!-- Fullscreen Overlay -->
     <div id="fullscreen-overlay">
         <button id="fullscreen-download" title="Download">&#8681;</button>
         <button id="fullscreen-close" title="Close fullscreen">&times;</button>
         <div id="fullscreen-content"></div>
     </div>
-    <!-- Confirm Delete Overlay -->
     <div id="confirm-overlay">
         <div id="confirm-dialog">
             <h2 id="confirm-title">Are you sure?</h2>
@@ -732,28 +730,33 @@
     });
 
     uploadInput.addEventListener('change', function() {
-        // After the upload overlay closes (file selected or cancelled), re-enter fullscreen
-        setTimeout(function() {
-            parent.postMessage('enter-fullscreen', '*');
-        }, 200);
-
         const file = uploadInput.files[0];
         if (!file) return;
+
         uploadFilename.textContent = file.name;
         const reader = new FileReader();
+
         reader.onload = function(e) {
-            const dataURL = e.target.result;
-            let type = file.type || "text/plain";
-            let fileEntry = { name: file.name, data: dataURL, type: type };
+            const dataResult = e.target.result;
+            const type = file.type || "text/plain";
+            const fileEntry = { name: file.name, data: dataResult, type: type };
+
             let files = getDownloadFiles();
             files.push(fileEntry);
             localStorage.setItem("LOOS_downloads", JSON.stringify(files));
+
             if (currentFolder === "downloads") {
                 currentFiles = getDownloadFiles();
                 renderFilesList();
             }
+
             uploadFilename.textContent = "Uploaded: " + file.name;
+
+            // Re-enter fullscreen AFTER the file has been processed and saved.
+            parent.postMessage('enter-fullscreen', '*');
         };
+
+        // Read the file as text or a data URL depending on its type
         if (file.type.startsWith("text/") || file.type === "") {
             reader.readAsText(file);
         } else {
