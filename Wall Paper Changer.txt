@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Wallpaper Changer</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f2f5;
+            color: #333;
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 550px;
+        }
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-align: center;
+            color: #1a202c;
+        }
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 2.5rem;
+            font-size: 1.1rem;
+        }
+        .card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e2e8f0;
+        }
+        .current-wallpaper-preview {
+            text-align: center;
+        }
+        .current-wallpaper-preview .preview-label {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: block;
+            color: #4a5568;
+        }
+        .current-wallpaper-preview img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .input-label {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            display: block;
+            color: #4a5568;
+        }
+        .input-row {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+        .input-row input[type="text"] {
+            flex-grow: 1;
+            padding: 0.6rem 0.8rem;
+            font-size: 1rem;
+            border-radius: 8px;
+            border: 1px solid #cbd5e0;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .input-row input[type="text"]:focus {
+            outline: none;
+            border-color: #4299e1;
+            box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.5);
+        }
+        .input-row button, .input-row label, #show-options-btn, .modal-action-btn {
+            padding: 0.6rem 1.3rem;
+            border-radius: 8px;
+            border: none;
+            background: #0078d4;
+            color: #fff;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.18s;
+            white-space: nowrap;
+            width: 100%;
+        }
+        .input-row button:hover, .input-row label:hover, #show-options-btn:hover, .modal-action-btn:hover {
+            background: #005fa3;
+        }
+        .input-row label {
+            display: inline-block;
+            text-align: center;
+        }
+        .input-row input[type="file"] {
+            display: none;
+        }
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: none; /* Hidden by default */
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: #f0f2f5;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            width: 90%;
+            max-width: 550px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+        #change-wallpaper-modal .modal-content, #url-modal .modal-content {
+             background: #f0f2f5;
+             padding: 0.5rem;
+             border: none;
+             box-shadow: none;
+        }
+         #change-wallpaper-modal .card, #url-modal .card {
+            margin: 0.5rem;
+         }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding: 0 1.5rem 0.8rem 1.5rem;
+            margin-bottom: 1rem;
+            background: #fff;
+            border-radius: 12px 12px 0 0;
+        }
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.2rem;
+        }
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #888;
+            padding: 0;
+            line-height: 1;
+        }
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 1rem;
+            overflow-y: auto;
+            padding: 1.5rem;
+            background: #fff;
+            border-radius: 0 0 12px 12px;
+        }
+        .image-grid img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+        .image-grid img:hover {
+            border-color: #0078d4;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Wallpaper Settings</h1>
+        <p class="subtitle">Customize your Laughable OS desktop</p>
+
+        <!-- Current Wallpaper Preview -->
+        <div class="card current-wallpaper-preview">
+            <span class="preview-label">Current Wallpaper</span>
+            <div id="preview">
+                <!-- Preview will be shown here -->
+            </div>
+        </div>
+        
+        <!-- Main button to open options -->
+        <div class="card">
+            <button id="show-options-btn">Change Wallpaper</button>
+        </div>
+    </div>
+
+    <!-- Modal for Wallpaper Change Options -->
+    <div id="change-wallpaper-modal" class="modal-overlay">
+        <div class="modal-content">
+             <div class="modal-header" style="border-radius: 12px; margin-bottom:0;">
+                <h2>Change Wallpaper</h2>
+                <button id="close-options-modal-btn" class="close-btn">&times;</button>
+            </div>
+            <!-- Option 1: Paste URL -->
+            <div class="card">
+                <div class="input-label">Paste a link</div>
+                <button id="show-url-modal-btn" class="modal-action-btn">Paste URL or URI</button>
+            </div>
+
+            <!-- Option 2: Upload from Laughable OS -->
+            <div class="card">
+                <div class="input-label">Upload image from files</div>
+                <div class="input-row">
+                    <button id="browse-os-btn" class="modal-action-btn">Browse files</button>
+                </div>
+            </div>
+
+            <!-- Option 3: Upload from device -->
+            <div class="card">
+                <div class="input-label">Upload from your device</div>
+                <div class="input-row">
+                    <label for="wallpaper-device-upload" id="device-upload-label">Search Device</label>
+                    <input type="file" id="wallpaper-device-upload" accept="image/*" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Pasting URL -->
+    <div id="url-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header" style="border-radius: 12px; margin-bottom:0;">
+                <h2>Paste Image Link</h2>
+                <button id="close-url-modal-btn" class="close-btn">&times;</button>
+            </div>
+            <div class="card">
+                <div class="input-label">Set from URL or Data URI</div>
+                <div class="input-row">
+                    <input type="text" id="wallpaper-url" placeholder="Paste image link here" />
+                    <button id="set-wallpaper-url-btn">Set</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for browsing OS images -->
+    <div id="os-image-modal" class="modal-overlay">
+        <div class="modal-content" style="padding:0; background: #fff;">
+            <div class="modal-header">
+                <h2>Select an Image from Downloads</h2>
+                <button id="modal-close-btn" class="close-btn">&times;</button>
+            </div>
+            <div id="os-image-grid" class="image-grid">
+                <!-- Images will be injected here by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Element References ---
+        const WALLPAPER_STORAGE_KEY = 'laughable_os_wallpaper_image';
+        let expectingFilePicker = false;
+
+        const preview = document.getElementById('preview');
+        const showOptionsBtn = document.getElementById('show-options-btn');
+        
+        // Options Modal
+        const changeWallpaperModal = document.getElementById('change-wallpaper-modal');
+        const closeOptionsModalBtn = document.getElementById('close-options-modal-btn');
+        const showUrlModalBtn = document.getElementById('show-url-modal-btn');
+        const deviceLabel = document.getElementById('device-upload-label');
+        const inputDevice = document.getElementById('wallpaper-device-upload');
+        const browseOsBtn = document.getElementById('browse-os-btn');
+        
+        // URL Modal
+        const urlModal = document.getElementById('url-modal');
+        const closeUrlModalBtn = document.getElementById('close-url-modal-btn');
+        const inputUrl = document.getElementById('wallpaper-url');
+        const btnUrl = document.getElementById('set-wallpaper-url-btn');
+        
+        // OS Image Browser Modal
+        const osImageModal = document.getElementById('os-image-modal');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+        const osImageGrid = document.getElementById('os-image-grid');
+
+        // --- Core Functions ---
+        function applyWallpaper(url) {
+            // Securely communicate with the parent OS via postMessage, which is safe for cross-origin frames.
+            window.top.postMessage({ type: 'setWallpaper', url: url }, '*');
+
+            // Also, save to localStorage for persistence. The OS can read this on startup.
+            localStorage.setItem(WALLPAPER_STORAGE_KEY, url);
+            
+            // Update the local preview within this app
+            updatePreview(url);
+        }
+
+        function updatePreview(url) {
+            if (url && url.length > 5) {
+                preview.innerHTML = `<img src="${url}" alt="Wallpaper Preview">`;
+            } else {
+                preview.innerHTML = "<p>No wallpaper set.</p>";
+            }
+        }
+
+        // --- Modal Visibility ---
+        function openModal(modal) { modal.style.display = 'flex'; }
+        function closeModal(modal) { modal.style.display = 'none'; }
+        
+        showOptionsBtn.addEventListener('click', () => openModal(changeWallpaperModal));
+        closeOptionsModalBtn.addEventListener('click', () => closeModal(changeWallpaperModal));
+        changeWallpaperModal.addEventListener('click', (e) => {
+            if (e.target === changeWallpaperModal) closeModal(changeWallpaperModal);
+        });
+
+        showUrlModalBtn.addEventListener('click', () => openModal(urlModal));
+        closeUrlModalBtn.addEventListener('click', () => closeModal(urlModal));
+        urlModal.addEventListener('click', (e) => {
+            if (e.target === urlModal) closeModal(urlModal);
+        });
+
+        // --- Event Listeners for Wallpaper Options ---
+        btnUrl.addEventListener('click', () => {
+            const url = inputUrl.value.trim();
+            if (!url) {
+                console.error("Please enter a valid image URL or Data URI.");
+                return;
+            }
+            applyWallpaper(url);
+            closeModal(urlModal);
+            closeModal(changeWallpaperModal);
+        });
+
+        deviceLabel.addEventListener('click', () => {
+            expectingFilePicker = true;
+            window.top.postMessage('exit-fullscreen', '*');
+            // The browser's default behavior for the <label> will trigger the input click.
+            // No need for inputDevice.click() here.
+        });
+
+        window.addEventListener('focus', () => {
+            if (expectingFilePicker) {
+                setTimeout(() => {
+                    window.top.postMessage('enter-fullscreen', '*');
+                }, 200);
+                expectingFilePicker = false;
+            }
+        });
+
+        inputDevice.addEventListener('change', () => {
+            expectingFilePicker = false;
+            const file = inputDevice.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const dataUrl = e.target.result;
+                applyWallpaper(dataUrl);
+                closeModal(changeWallpaperModal);
+                window.top.postMessage('enter-fullscreen', '*');
+            };
+            reader.onerror = () => console.error("Failed to read file.");
+            reader.readAsDataURL(file);
+        });
+        
+        // --- Laughable OS Image Browser Logic ---
+        function getDownloadImages() {
+            const key = "LOOS_downloads";
+            const raw = localStorage.getItem(key);
+            if (!raw) return [];
+            try {
+                const files = JSON.parse(raw);
+                if (Array.isArray(files)) {
+                    return files.filter(file => file.type && file.type.startsWith('image/'));
+                }
+            } catch (e) { console.error("Error parsing downloads file:", e); }
+            return [];
+        }
+
+        browseOsBtn.addEventListener('click', () => {
+            const images = getDownloadImages();
+            osImageGrid.innerHTML = '';
+            if (images.length === 0) {
+                osImageGrid.innerHTML = '<p style="padding: 1.5rem; text-align: center;">No images found in your Laughable OS Downloads.</p>';
+            } else {
+                images.forEach(imageFile => {
+                    const img = document.createElement('img');
+                    img.src = imageFile.data;
+                    img.title = imageFile.name;
+                    img.addEventListener('click', () => {
+                        applyWallpaper(imageFile.data);
+                        closeModal(osImageModal);
+                        closeModal(changeWallpaperModal);
+                    });
+                    osImageGrid.appendChild(img);
+                });
+            }
+            openModal(osImageModal);
+        });
+
+        modalCloseBtn.addEventListener('click', () => closeModal(osImageModal));
+        osImageModal.addEventListener('click', (e) => {
+            if (e.target === osImageModal) closeModal(osImageModal);
+        });
+
+        // --- Initial Load ---
+        (function showCurrentWallpaper() {
+            let wallpaperURL = localStorage.getItem(WALLPAPER_STORAGE_KEY);
+            updatePreview(wallpaperURL);
+        })();
+    </script>
+</body>
+</html>
+
