@@ -698,9 +698,10 @@
     });
 
     uploadInput.addEventListener('click', function() {
-        // The browser will exit fullscreen automatically.
         // We set a flag to handle re-entry when focus returns.
         expectingFilePicker = true;
+        // Also send the exit message to the top-level window.
+        window.top.postMessage('exit-fullscreen', '*');
     });
 
     // This handles re-entering fullscreen if the user cancels the file dialog
@@ -708,7 +709,7 @@
         if (expectingFilePicker) {
             // A short delay helps ensure the transition is smooth
             setTimeout(() => {
-                parent.postMessage('enter-fullscreen', '*');
+                window.top.postMessage('enter-fullscreen', '*');
             }, 200);
             expectingFilePicker = false;
         }
@@ -739,7 +740,7 @@
             }
             uploadFilename.textContent = "Uploaded: " + file.name;
             // We still re-enter fullscreen here for the successful upload case
-            parent.postMessage('enter-fullscreen', '*');
+            window.top.postMessage('enter-fullscreen', '*');
         };
 
         if (file.type.startsWith("text/") || !file.type) {
@@ -825,3 +826,4 @@
 </script>
 </body>
 </html>
+
