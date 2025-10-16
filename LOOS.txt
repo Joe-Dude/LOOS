@@ -17,7 +17,14 @@ Embed: 'https://raw.githubusercontent.com/Joe-Dude/LOOS/main/Browser.lol Search 
 Name: 'File Explorer',
 Desc: 'Manage all your files with ease, from files on Laughable OS to external files.',
 Icon: 'https://raw.githubusercontent.com/Joe-Dude/LOOS/main/File Explorer Icon.png',
-Ss: 'https://raw.githubusercontent.com/Joe-Dude/LOOS/main/Screenshot 2025-10-15 5.23.44 PM.png,https://raw.githubusercontent.com/Joe-Dude/LOOS/main/Screenshot 2025-10-15 5.24.04 PM.png',
+Ss: 'https://raw.githubusercontent.com/Joe-Dude/LOOS/main/',
+Embed: 'https://raw.githubusercontent.com/Joe-Dude/LOOS/main/File Explorer.txt',
+]
+[
+Name: 'Wallpaper Changer',
+Desc: 'Want to get rid of the default wallpaper for your Laughable OS? Use this app to change your wallpaper up whenever you feel like it!',
+Icon: 'https://raw.githubusercontent.com/Joe-Dude/LOOS/main/File Explorer Icon.png',
+Ss: 'https://raw.githubusercontent.com/Joe-Dude/LOOS/main/',
 Embed: 'https://raw.githubusercontent.com/Joe-Dude/LOOS/main/File Explorer.txt',
 ]
 }
