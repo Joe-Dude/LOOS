@@ -381,11 +381,13 @@
             </div>
         </div>
     </div>
+    <!-- Fullscreen Overlay -->
     <div id="fullscreen-overlay">
         <button id="fullscreen-download" title="Download">&#8681;</button>
         <button id="fullscreen-close" title="Close fullscreen">&times;</button>
         <div id="fullscreen-content"></div>
     </div>
+    <!-- Confirm Delete Overlay -->
     <div id="confirm-overlay">
         <div id="confirm-dialog">
             <h2 id="confirm-title">Are you sure?</h2>
@@ -403,6 +405,7 @@
     let currentFiles = [];
     let selectedFile = null;
     let currentFullscreenFile = null;
+    let expectingFilePicker = false; // Flag to track if the file picker was opened
 
     // Confirm overlay state
     let pendingDelete = null;
@@ -487,7 +490,7 @@
     // Download helper
     function downloadFile(name, data, type) {
         let blob;
-        if (type === "image" || type === "video") {
+        if (type === "image" || type === "video" || data.startsWith('data:')) {
             blob = dataURItoBlob(data);
         } else {
             blob = new Blob([data], { type: "text/plain" });
@@ -545,28 +548,7 @@
                 } else if (file.value.startsWith('data:')) {
                     type = 'text'; data = file.value;
                 } else {
-                    // Try file extension
-                    if (/\.(png|jpg|jpeg|gif|webp)$/i.test(file.name)) {
-                        type = 'image'; data = file.value;
-                    } else if (/\.(mp4|webm|ogg)$/i.test(file.name)) {
-                        type = 'video'; data = file.value;
-                    } else if (/\.(pdf)$/i.test(file.name)) {
-                        type = 'pdf'; data = file.value;
-                    } else if (/\.(md)$/i.test(file.name)) {
-                        type = 'markdown'; data = file.value;
-                    } else if (/\.(csv)$/i.test(file.name)) {
-                        type = 'csv'; data = file.value;
-                    } else if (/\.(json)$/i.test(file.name)) {
-                        type = 'json'; data = file.value;
-                    } else if (/\.(js)$/i.test(file.name)) {
-                        type = 'js'; data = file.value;
-                    } else if (/\.(css)$/i.test(file.name)) {
-                        type = 'css'; data = file.value;
-                    } else if (/\.(html)$/i.test(file.name)) {
-                        type = 'html'; data = file.value;
-                    } else {
-                        type = 'text'; data = file.value;
-                    }
+                    type = 'text'; data = file.value;
                 }
             }
         } else { // Downloads folder
@@ -638,14 +620,19 @@
             iframe.style.height = "88vh";
             iframe.style.border = "none";
             fullscreenContent.appendChild(iframe);
-        } else if (type === 'markdown') {
-            const pre = document.createElement('pre');
-            pre.textContent = atob(data.split(',')[1] || "") || data;
+        } else if (type === 'markdown' || type === 'csv' || type === 'json' || type === 'js' || type === 'css' || type === 'text') {
+             const pre = document.createElement('pre');
+             if (typeof data === "string" && data.startsWith('data:')) {
+                // Decode base64 data URI if present
+                try {
+                    pre.textContent = atob(data.split(',')[1] || "");
+                } catch(e) {
+                    pre.textContent = "Error decoding file content.";
+                }
+            } else {
+                pre.textContent = data;
+            }
             fullscreenContent.appendChild(pre);
-        } else if (type === 'csv' || type === 'json' || type === 'js' || type === 'css') {
-            const code = document.createElement('pre');
-            code.textContent = atob(data.split(',')[1] || "") || data;
-            fullscreenContent.appendChild(code);
         } else if (type === 'pdf') {
             const iframe = document.createElement('iframe');
             iframe.src = data;
@@ -653,14 +640,6 @@
             iframe.style.height = "88vh";
             iframe.style.border = "none";
             fullscreenContent.appendChild(iframe);
-        } else {
-            const pre = document.createElement('pre');
-            if (typeof data === "string" && data.startsWith('data:')) {
-                pre.textContent = atob(data.split(',')[1] || "") || data;
-            } else {
-                pre.textContent = data;
-            }
-            fullscreenContent.appendChild(pre);
         }
         fullscreenOverlay.style.display = 'flex';
         document.body.style.overflow = 'hidden';
@@ -675,9 +654,7 @@
 
     fullscreenDownload.onclick = () => {
         if (!currentFullscreenFile) return;
-        let type = currentFullscreenFile.type;
-        let name = currentFullscreenFile.name;
-        let data = currentFullscreenFile.data;
+        let { name, data, type } = currentFullscreenFile;
         downloadFile(name, data, type);
     };
 
@@ -707,10 +684,6 @@
             updateFilesTitle();
             renderFilesList();
             hideFileViewer();
-            fullscreenOverlay.style.display = 'none';
-            fullscreenContent.innerHTML = '';
-            document.body.style.overflow = '';
-            currentFullscreenFile = null;
         });
     });
 
@@ -725,11 +698,26 @@
     });
 
     uploadInput.addEventListener('click', function() {
-        // Exit Laughable OS fullscreen before showing file picker
-        parent.postMessage('exit-fullscreen', '*');
+        // The browser will exit fullscreen automatically.
+        // We set a flag to handle re-entry when focus returns.
+        expectingFilePicker = true;
+    });
+
+    // This handles re-entering fullscreen if the user cancels the file dialog
+    window.addEventListener('focus', () => {
+        if (expectingFilePicker) {
+            // A short delay helps ensure the transition is smooth
+            setTimeout(() => {
+                parent.postMessage('enter-fullscreen', '*');
+            }, 200);
+            expectingFilePicker = false;
+        }
     });
 
     uploadInput.addEventListener('change', function() {
+        // A file was selected, so the 'focus' handler is no longer needed for this action
+        expectingFilePicker = false;
+        
         const file = uploadInput.files[0];
         if (!file) return;
 
@@ -749,15 +737,12 @@
                 currentFiles = getDownloadFiles();
                 renderFilesList();
             }
-
             uploadFilename.textContent = "Uploaded: " + file.name;
-
-            // Re-enter fullscreen AFTER the file has been processed and saved.
+            // We still re-enter fullscreen here for the successful upload case
             parent.postMessage('enter-fullscreen', '*');
         };
 
-        // Read the file as text or a data URL depending on its type
-        if (file.type.startsWith("text/") || file.type === "") {
+        if (file.type.startsWith("text/") || !file.type) {
             reader.readAsText(file);
         } else {
             reader.readAsDataURL(file);
@@ -802,10 +787,6 @@
         selectedFile = null;
         renderFilesList();
         hideFileViewer();
-        fullscreenOverlay.style.display = 'none';
-        fullscreenContent.innerHTML = '';
-        document.body.style.overflow = '';
-        currentFullscreenFile = null;
         hideDeleteOverlay();
     };
 
