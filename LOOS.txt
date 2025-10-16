@@ -25,6 +25,6 @@ Name: 'Wallpaper Changer',
 Desc: 'Want to get rid of the default wallpaper for your Laughable OS? Use this app to change your wallpaper up whenever you feel like it!',
 Icon: 'https://raw.githubusercontent.com/Joe-Dude/LOOS/main/File Explorer Icon.png',
 Ss: 'https://raw.githubusercontent.com/Joe-Dude/LOOS/main/',
-Embed: 'https://raw.githubusercontent.com/Joe-Dude/LOOS/main/File Explorer.txt',
+Embed: 'https://raw.githubusercontent.com/Joe-Dude/LOOS/main/Wall Paper Changer.txt',
 ]
 }
