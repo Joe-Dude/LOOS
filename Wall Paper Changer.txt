@@ -188,8 +188,8 @@
 </head>
 <body>
     <div class="container">
-        <h1>Wallpaper Settings</h1>
-        <p class="subtitle">Customize your Laughable OS desktop</p>
+        <h1>Wallpaper Changer</h1>
+        <p class="subtitle">Note: Not all images work from your device, browser storage is limited.</p>
 
         <!-- Current Wallpaper Preview -->
         <div class="card current-wallpaper-preview">
