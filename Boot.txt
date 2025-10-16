@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Boot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow: hidden; /* Prevent scrollbars during animation */
+        }
+
+        /* Animation Styles */
+        #animation-container {
+            position: relative; 
+            white-space: nowrap;
+        }
+        .animation-text {
+            opacity: 0;
+            transition: opacity 1s ease-in;
+        }
+        .animation-text.start {
+            opacity: 1;
+        }
+        .animation-text .rest, .animation-text .space {
+            transition: opacity 0.5s ease;
+        }
+        #animation-container > span {
+            display: inline-block;
+            will-change: transform;
+            transition: transform 3s cubic-bezier(0.65, 0, 0.35, 1);
+        }
+        .animation-text .initial {
+            display: inline-block;
+            letter-spacing: -0.05em;
+        }
+
+        /* Loader Styles */
+        #loader-wrapper {
+            padding: 1.5rem;
+        }
+        .loader-bar {
+            position: absolute;
+            background-color: #3b82f6; /* Blue-500 */
+            transition: width 0.5s ease-out, height 0.5s ease-out;
+        }
+        .loader-bar.top { top: 0; left: 0; width: 0; height: 8px; z-index: 4; }
+        .loader-bar.right { top: 0; right: 0; width: 8px; height: 0; z-index: 3; }
+        .loader-bar.bottom { bottom: 0; right: 0; width: 0; height: 8px; z-index: 2; }
+        .loader-bar.left { bottom: 0; left: 0; width: 8px; height: 0; z-index: 1; }
+       
+        #loader-status {
+            transition: opacity 0.2s ease-in-out;
+        }
+
+        /* Login Styles */
+        #login-container {
+            transition: opacity 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-blue-50 text-blue-800 flex items-center justify-center h-screen">
+    <div id="main-container" class="w-full max-w-4xl text-center p-4 flex flex-col items-center justify-center">
+        
+        <div id="animation-container" class="w-full animation-text font-bold text-2xl sm:text-3xl md:text-5xl py-16">
+            <span><span class="initial">L</span><span class="rest">aughable</span></span><span class="space">&nbsp;</span>
+            <span><span class="initial">O</span><span class="rest">nline</span></span><span class="space">&nbsp;</span>
+            <span><span class="initial">O</span><span class="rest">perator</span></span><span class="space">&nbsp;</span>
+            <span><span class="initial">S</span><span class="rest">ystem</span></span>
+        </div>
+
+        <!-- Login UI -->
+        <div id="login-container" class="hidden w-full max-w-sm">
+            <!-- Form for existing users -->
+            <div id="welcome-back-form" class="hidden">
+                <h2 id="welcome-message" class="text-3xl font-bold mb-4">Welcome Back!</h2>
+                <p class="text-gray-600 mb-6">Please enter your password to continue.</p>
+                <input type="password" id="password-input" placeholder="Password" class="w-full px-4 py-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400">
+                <button id="login-button" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition duration-300">Login</button>
+                 <p id="login-error" class="text-red-500 text-sm mt-2 h-4"></p>
+            </div>
+            <!-- Form for new users -->
+            <div id="create-account-form" class="hidden">
+                <h2 class="text-3xl font-bold mb-4">Create Your Account</h2>
+                <p class="text-gray-600 mb-6">Choose a username and password to get started.</p>
+                <input type="text" id="new-username-input" placeholder="Username" class="w-full px-4 py-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400">
+                <input type="password" id="new-password-input" placeholder="Password" class="w-full px-4 py-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400">
+                <button id="create-account-button" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition duration-300">Create Account</button>
+            </div>
+        </div>
+
+        <!-- Loader UI -->
+        <div id="boot-process-container" class="hidden w-full flex flex-col items-center">
+            <div id="loader-wrapper" class="relative inline-block">
+                <h1 class="font-bold text-2xl sm:text-3xl md:text-5xl text-blue-800" style="letter-spacing: 0.5em; margin-right: -0.5em;">LOOS</h1>
+                <div class="loader-bar top"></div><div class="loader-bar right"></div><div class="loader-bar bottom"></div><div class="loader-bar left"></div>
+            </div>
+            <p id="loader-status" class="mt-8 text-lg text-gray-600 h-8"></p>
+        </div>
+
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        const GIST_URL = 'https://raw.githubusercontent.com/Joe-Dude/LOOS/main/LOOS%20MAIN%20UPDATE%20CODE.txt';
+        const OS_STORAGE_KEY = 'bootableHTMLOS';
+        const USERNAME_KEY = 'LOOS_USERNAME';
+        const PASSWORD_KEY = 'LOOS_PASSWORD';
+        // TIMING: 10ms delay + 1s fade-in + 1.5s pause1 + 0.5s fade-out + 0.6s pause2 + 3s slide + 1s final pause
+        const ANIMATION_DURATION_MS = 7610; 
+
+        // --- DOM ELEMENTS ---
+        const mainContainer = document.getElementById('main-container');
+        const animationContainer = document.getElementById('animation-container');
+        const loginContainer = document.getElementById('login-container');
+        const bootProcessContainer = document.getElementById('boot-process-container');
+        const loaderStatus = document.getElementById('loader-status');
+        // Loader bars for the square
+        const barTop = document.querySelector('.loader-bar.top');
+        const barRight = document.querySelector('.loader-bar.right');
+        const barBottom = document.querySelector('.loader-bar.bottom');
+        const barLeft = document.querySelector('.loader-bar.left');
+
+        // --- INITIAL BOOT ---
+        window.addEventListener('DOMContentLoaded', async () => {
+            await runIntroAnimation();
+            animationContainer.classList.add('hidden');
+            handleLogin();
+        });
+
+        // --- LOGIN LOGIC ---
+        function handleLogin() {
+            const savedUsername = localStorage.getItem(USERNAME_KEY);
+            loginContainer.classList.remove('hidden');
+
+            if (savedUsername) {
+                const welcomeForm = document.getElementById('welcome-back-form');
+                document.getElementById('welcome-message').textContent = `Welcome back, ${savedUsername}!`;
+                welcomeForm.classList.remove('hidden');
+                
+                const passwordInput = document.getElementById('password-input');
+                const loginButton = document.getElementById('login-button');
+                const loginError = document.getElementById('login-error');
+
+                loginButton.onclick = () => {
+                    if (passwordInput.value === localStorage.getItem(PASSWORD_KEY)) {
+                        fadeAndStartBoot();
+                    } else {
+                        loginError.textContent = 'Incorrect password. Please try again.';
+                    }
+                };
+                 passwordInput.addEventListener('keyup', (event) => { if (event.key === 'Enter') loginButton.click(); });
+
+            } else {
+                const createForm = document.getElementById('create-account-form');
+                createForm.classList.remove('hidden');
+
+                const usernameInput = document.getElementById('new-username-input');
+                const passwordInput = document.getElementById('new-password-input');
+                const createButton = document.getElementById('create-account-button');
+
+                createButton.onclick = () => {
+                    if (usernameInput.value && passwordInput.value) {
+                        localStorage.setItem(USERNAME_KEY, usernameInput.value);
+                        localStorage.setItem(PASSWORD_KEY, passwordInput.value);
+                        fadeAndStartBoot();
+                    }
+                };
+            }
+        }
+        
+        function fadeAndStartBoot() {
+            loginContainer.style.opacity = '0';
+            setTimeout(() => {
+                loginContainer.classList.add('hidden');
+                startBootProcess();
+            }, 500);
+        }
+
+        // --- MAIN BOOT PROCESS (after login) ---
+        async function startBootProcess() {
+            bootProcessContainer.classList.remove('hidden');
+            
+            await updateBootStatus('Starting...', 0);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await updateBootStatus('Initializing boot sequence...', 20);
+            
+            try {
+                if (document.documentElement.requestFullscreen) {
+                    await document.documentElement.requestFullscreen();
+                    await updateBootStatus('Fullscreen mode activated.', 40);
+                }
+            } catch (err) {
+                console.warn('Could not enter fullscreen:', err);
+                await updateBootStatus('Warning: Could not enter fullscreen automatically.', 40);
+            }
+
+            if (navigator.onLine) {
+                await updateBootStatus('System online. Checking for updates...', 60);
+                await checkForUpdates();
+            } else {
+                // If offline, skip the update check and go straight to 80%
+                await updateBootStatus('System offline. Loading from local storage...', 80);
+            }
+
+            const htmlToLoad = localStorage.getItem(OS_STORAGE_KEY);
+            if (htmlToLoad) {
+                await updateBootStatus('File found. Preparing to launch...', 100);
+                setTimeout(() => {
+                    mainContainer.style.display = 'none';
+                    const iframe = document.createElement('iframe');
+                    iframe.style.position = 'fixed';
+                    iframe.style.top = '0';
+                    iframe.style.left = '0';
+                    iframe.style.width = '100vw';
+                    iframe.style.height = '100vh';
+                    iframe.style.border = 'none';
+                    iframe.srcdoc = htmlToLoad;
+                    // Grant permissions to the iframe
+                    iframe.allow = "fullscreen; camera; microphone; geolocation; payment; usb; autoplay; clipboard-write; display-capture";
+                    document.body.appendChild(iframe);
+
+                    // Listen for messages from the loaded OS
+                    window.addEventListener('message', (event) => {
+                        const attemptClose = () => {
+                            // "Spam" the close command for a short period.
+                            const closeInterval = setInterval(() => {
+                                window.close();
+                            }, 100);
+
+                            // After 1 second, if it's still open, stop trying and show the message.
+                            setTimeout(() => {
+                                clearInterval(closeInterval);
+                                if (document.body && !document.hidden) {
+                                    document.body.innerHTML = `<div class="w-screen h-screen flex items-center justify-center bg-blue-50 text-blue-800">
+                                                                    <h1 class="text-3xl font-bold">You can now safely close this tab.</h1>
+                                                               </div>`;
+                                }
+                            }, 1000);
+                        };
+
+                        switch (event.data) {
+                            case 'shutdown-os':
+                                // This is the "restart" function.
+                                window.location.reload();
+                                break;
+                            case 'close-tab':
+                                // This is the "power off" function.
+                                // It exits fullscreen and then tries to close the tab.
+                                if (document.fullscreenElement) {
+                                    document.exitFullscreen().then(attemptClose);
+                                } else {
+                                    attemptClose();
+                                }
+                                break;
+                            case 'exit-fullscreen':
+                                if (document.fullscreenElement) {
+                                    document.exitFullscreen();
+                                }
+                                break;
+                            case 'enter-fullscreen':
+                                if (!document.fullscreenElement) {
+                                    document.documentElement.requestFullscreen();
+                                }
+                                break;
+                        }
+                    });
+                }, 1000); 
+            } else {
+                await updateBootStatus('CRITICAL ERROR: No local file found.', 100);
+            }
+        }
+
+        // --- HELPER FUNCTIONS ---
+        async function runIntroAnimation() {
+            const container = document.getElementById('animation-container');
+            const wordsAndSpaces = Array.from(container.children).filter(c => c.tagName === 'SPAN');
+            const initials = container.querySelectorAll('.initial');
+            const rests = container.querySelectorAll('.rest');
+            const spaces = container.querySelectorAll('.space');
+            const wordBlocks = wordsAndSpaces.filter(el => !el.classList.contains('space'));
+            const initialRects = wordsAndSpaces.map(el => el.getBoundingClientRect());
+            const containerRect = container.getBoundingClientRect();
+            [...rests, ...spaces].forEach(r => r.style.display = 'none');
+            const finalInitialRects = Array.from(initials).map(el => el.getBoundingClientRect());
+            const finalLoosWidth = finalInitialRects.length > 0 ? finalInitialRects[finalInitialRects.length - 1].right - finalInitialRects[0].left : 0;
+            [...rests, ...spaces].forEach(r => r.style.display = '');
+            container.style.height = `${containerRect.height}px`;
+            wordsAndSpaces.forEach((el, i) => {
+                el.style.position = 'absolute';
+                el.style.left = `${initialRects[i].left - containerRect.left}px`;
+                el.style.top = `${initialRects[i].top - containerRect.top}px`;
+            });
+            setTimeout(() => { container.classList.add('start'); }, 10);
+            setTimeout(() => { [...rests, ...spaces].forEach(el => el.style.opacity = '0'); }, 2510);
+            setTimeout(() => {
+                const finalContainerStartX = (containerRect.width / 2) - (finalLoosWidth / 2);
+                wordBlocks.forEach((word, i) => {
+                    const initialX = initialRects[wordsAndSpaces.indexOf(word)].left;
+                    const finalX = containerRect.left + finalContainerStartX + (finalInitialRects[i].left - finalInitialRects[0].left);
+                    const translateX = finalX - initialX;
+                    word.style.transform = `translateX(${translateX}px)`;
+                });
+            }, 3610);
+            return new Promise(resolve => setTimeout(resolve, ANIMATION_DURATION_MS));
+        }
+
+        async function checkForUpdates() {
+            try {
+                const response = await fetch(GIST_URL, { cache: 'no-cache' });
+                if (!response.ok) throw new Error(`Network request failed: ${response.status}`);
+                const latestHtml = await response.text();
+                const localHtml = localStorage.getItem(OS_STORAGE_KEY);
+                if (latestHtml !== localHtml) {
+                    await updateBootStatus('New version found. Updating...', 70); // Intermediate step
+                    localStorage.setItem(OS_STORAGE_KEY, latestHtml);
+                    await updateBootStatus('Update complete.', 80);
+                } else {
+                    await updateBootStatus('System is up to date.', 80);
+                }
+            } catch (error) {
+                console.error('Update check failed:', error);
+                await updateBootStatus(`Update check failed. Using local version.`, 80);
+            }
+        }
+
+        function updateBootStatus(text, percentage) {
+            return new Promise(resolve => {
+                // Update the square progress
+                const topWidth = Math.min(100, (percentage / 25) * 100);
+                barTop.style.width = `${topWidth}%`;
+
+                const rightHeight = percentage > 25 ? Math.min(100, ((percentage - 25) / 25) * 100) : 0;
+                barRight.style.height = `${rightHeight}%`;
+                
+                const bottomWidth = percentage > 50 ? Math.min(100, ((percentage - 50) / 25) * 100) : 0;
+                barBottom.style.width = `${bottomWidth}%`;
+                
+                const leftHeight = percentage > 75 ? Math.min(100, ((percentage - 75) / 25) * 100) : 0;
+                barLeft.style.height = `${leftHeight}%`;
+
+                // Update the status text
+                loaderStatus.style.opacity = '0';
+                setTimeout(() => {
+                    loaderStatus.textContent = text;
+                    loaderStatus.style.opacity = '1';
+                    setTimeout(resolve, 600); 
+                }, 200);
+            });
+        }
+    </script>
+</body>
+</html>
