@@ -18,8 +18,243 @@
             background-size: cover;
             background-position: center;
         }
-        /* ... rest of styles unchanged ... */
-        /* [all original CSS unchanged for brevity] */
+        .taskbar {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            background-color: rgba(255, 255, 255, 0.7);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 5000;
+        }
+        .start-menu {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            background-color: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+            transform: translateY(20px);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 5001;
+        }
+        .start-menu.open {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .window {
+            min-width: 320px;
+            min-height: 240px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(200, 200, 200, 0.5);
+            resize: both;
+            overflow: auto;
+            background-color: #fdfdfd;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            position: absolute;
+            transition: top 0.2s ease-in-out, left 0.2s ease-in-out, width 0.2s ease-in-out, height 0.2s ease-in-out, border-radius 0.2s ease-in-out;
+        }
+        .title-bar {
+            background-color: #e9e9e9;
+            padding: 6px 10px;
+            cursor: move;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            border-bottom: 1px solid #dcdcdc;
+            flex-shrink: 0;
+        }
+        .title-bar-text {
+             font-weight: 500;
+             color: #333;
+        }
+        .title-bar-controls {
+            display: flex;
+        }
+        .title-bar-controls button {
+            width: 28px;
+            height: 28px;
+            border: none;
+            background-color: transparent;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+         .title-bar-controls button:hover {
+            background-color: rgba(0,0,0,0.1);
+        }
+        .title-bar-controls .close-btn:hover {
+            background-color: #e81123;
+            color: white;
+        }
+        .window-body {
+            flex-grow: 1;
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+         .window-body iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        .tray-icon {
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+        }
+        .tray-icon:hover {
+            background-color: rgba(0,0,0,0.1);
+        }
+        .volume-slider-popup {
+            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+            z-index: 5001;
+        }
+        input[type=range] { -webkit-appearance: none; appearance: none; width: 120px; height: 6px; background: #d3d3d3; outline: none; opacity: 0.7; transition: opacity .2s; border-radius: 3px; }
+        input[type=range]:hover { opacity: 1; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 18px; height: 18px; background: #0078d4; cursor: pointer; border-radius: 50%; }
+        input[type=range]::-moz-range-thumb { width: 18px, height: 18px; background: #0078d4; cursor: pointer; border-radius: 50%; }
+        .desktop-icon {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 80px;
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            color: white;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+        }
+        .desktop-icon:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+        .desktop-icon img {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 4px;
+        }
+        .desktop-icon span {
+            font-size: 13px;
+            line-height: 1.2;
+            word-break: break-word;
+        }
+        .app-store-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 1.5rem;
+        }
+        .app-store-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 0.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .app-store-item:hover {
+            background-color: rgba(0,0,0,0.05);
+        }
+        .app-store-item img {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 0.5rem;
+        }
+        .taskbar-app {
+            padding: 4px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border-bottom: 2px solid transparent;
+        }
+        .taskbar-app.active {
+            background-color: rgba(0, 120, 215, 0.2);
+            border-bottom: 2px solid #0078d7;
+        }
+        .taskbar-app:not(.active):hover {
+            background-color: rgba(0,0,0,0.1);
+        }
+        .taskbar-app img {
+            width: 24px;
+            height: 24px;
+        }
+        .start-menu-app-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .start-menu-app-item:hover {
+            background-color: rgba(0,0,0,0.1);
+        }
+        .start-menu-app-item img {
+            width: 32px;
+            height: 32px;
+        }
+        /* --- Power menu styles --- */
+        .start-menu-action-row {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1rem;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 1rem;
+        }
+        .power-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1.2rem;
+            font-weight: 500;
+            font-size: 1rem;
+            border-radius: 6px;
+            border: none;
+            background: #f3f4f6;
+            color: #222;
+            cursor: pointer;
+            transition: background 0.18s;
+        }
+        .power-btn:hover {
+            background: #e5e7eb;
+        }
+        /* --- Sleep screen styles --- */
+        #sleep-saver {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            background: #000;
+            color: #fff;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            font-size: 2.2rem;
+            user-select: none;
+            cursor: pointer;
+        }
+        #sleep-saver .wake-text {
+            font-size: 2.2rem;
+            font-weight: bold;
+            text-align: center;
+            padding: 2rem;
+            text-shadow: 0 0 16px #000;
+        }
     </style>
 </head>
 <body class="h-screen w-screen flex flex-col">
@@ -68,7 +303,20 @@
 <script>
     // --- DOM Elements ---
     const desktop = document.getElementById('desktop');
-    // ... [rest of your DOM elements unchanged] ...
+    const startButton = document.getElementById('start-button');
+    const startMenu = document.getElementById('start-menu');
+    const taskbarAppsContainer = document.getElementById('taskbar-apps');
+    const wifiOn = document.getElementById('wifi-on');
+    const wifiOff = document.getElementById('wifi-off');
+    const speakerIconContainer = document.getElementById('speaker-icon-container');
+    const volumeSliderPopup = document.getElementById('volume-slider-popup');
+    const volumeSlider = document.getElementById('volume-slider');
+    const speakerHigh = document.getElementById('speaker-high');
+    const speakerLow = document.getElementById('speaker-low');
+    const speakerMuted = document.getElementById('speaker-muted');
+    const timeElement = document.getElementById('time');
+    const dateElement = document.getElementById('date');
+    const sleepSaver = document.getElementById('sleep-saver');
 
     // --- Wallpaper Logic Start ---
     const WALLPAPER_STORAGE_KEY = 'laughable_os_wallpaper_image';
@@ -93,7 +341,7 @@
         }
     }
 
-    // Function to allow user to set wallpaper manually
+    // Function to allow user to set wallpaper manually (not called from UI, but exposed for apps)
     function setWallpaper(url) {
         localStorage.setItem(WALLPAPER_STORAGE_KEY, url);
         setWallpaperFromStorageOrDefault();
@@ -104,22 +352,498 @@
 
     // --- Wallpaper Logic End ---
 
-    // [rest of original script unchanged...]
+    // --- State & Constants ---
+    const APP_STORE_URL = 'https://raw.githubusercontent.com/Joe-Dude/LOOS/main/LOOS.txt';
+    const APP_STORE_ICON_URL = 'https://raw.githubusercontent.com/Joe-Dude/LOOS/main/Laughable%20OS%20Icon.png';
+    const APP_STORE_ICON_KEY = 'laughable_os_store_icon';
+    let highestZIndex = 100;
+    let openWindows = {};
+    let allAppsCache = [];
+    let appStoreIconBase64 = null;
 
     // --- Icon Caching Logic ---
-    // ... unchanged ...
+    async function cacheAppStoreIcon() {
+        const cached = localStorage.getItem(APP_STORE_ICON_KEY);
+        if (cached) {
+            appStoreIconBase64 = cached;
+            return cached;
+        }
+        try {
+            const response = await fetch(APP_STORE_ICON_URL);
+            const blob = await response.blob();
+            const base64 = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+            appStoreIconBase64 = base64;
+            localStorage.setItem(APP_STORE_ICON_KEY, base64);
+            return base64;
+        } catch (e) {
+            appStoreIconBase64 = APP_STORE_ICON_URL;
+            return APP_STORE_ICON_URL;
+        }
+    }
+    (async () => { await cacheAppStoreIcon(); })();
 
     // --- Core OS Functions ---
-    // ... unchanged ...
+    const AppDB = {
+        getInstalledApps: () => {
+            try {
+                const apps = localStorage.getItem('laughable_os_apps');
+                return apps ? JSON.parse(apps) : [];
+            } catch (e) {
+                console.error("Failed to parse apps from localStorage", e);
+                return [];
+            }
+        },
+        saveInstalledApps: (apps) => {
+            localStorage.setItem('laughable_os_apps', JSON.stringify(apps));
+        },
+        installApp: (app) => {
+            const apps = AppDB.getInstalledApps();
+            if (!apps.find(a => a.Name === app.Name)) {
+                apps.push(app);
+                AppDB.saveInstalledApps(apps);
+            }
+        },
+        uninstallApp: (appName) => {
+            let apps = AppDB.getInstalledApps();
+            apps = apps.filter(a => a.Name !== appName);
+            AppDB.saveInstalledApps(apps);
+        }
+    };
+
+    const WindowManager = {
+        create: (app) => {
+            if (openWindows[app.Name]) {
+                const win = openWindows[app.Name];
+                win.windowEl.style.display = 'flex';
+                WindowManager.focus(win.windowEl);
+                return win.windowEl;
+            }
+
+            const windowEl = document.createElement('div');
+            windowEl.className = 'window';
+            windowEl.style.left = `${Math.random() * 200 + 50}px`;
+            windowEl.style.top = `${Math.random() * 100 + 50}px`;
+            windowEl.style.width = app.isStore ? '640px' : '480px';
+            windowEl.style.height = app.isStore ? '480px' : '320px';
+
+            windowEl.innerHTML = `
+                <div class="title-bar">
+                    <span class="title-bar-text">${app.Name}</span>
+                    <div class="title-bar-controls">
+                        <button class="minimize-btn" title="Minimize">
+                           <svg width="12" height="12" viewBox="0 0 12 12"><rect fill="currentColor" width="10" height="1" x="1" y="6"></rect></svg>
+                        </button>
+                        <button class="maximize-btn" title="Maximize">
+                           <svg class="maximize-icon" width="12" height="12" viewBox="0 0 12 12"><rect width="9" height="9" x="1.5" y="1.5" fill="none" stroke="currentColor" stroke-width="1"></rect></svg>
+                           <svg class="restore-icon hidden" width="12" height="12" viewBox="0 0 12 12"><path d="M3.5 0.5H10.5V7.5H7.5V10.5H0.5V3.5H3.5V0.5Z M3.5 3.5V7.5H7.5V3.5H3.5Z" stroke="currentColor" stroke-width="1" fill="none"></path></svg>
+                        </button>
+                        <button class="close-btn" title="Close">&times;</button>
+                    </div>
+                </div>
+                <div class="window-body">
+                    ${app.isStore ? '<div class="app-store-container w-full h-full flex flex-col"></div>' : '<iframe srcdoc=""></iframe>'}
+                </div>
+            `;
+            
+            desktop.appendChild(windowEl);
+            
+            const taskbarEl = WindowManager.createTaskbarIcon(app, windowEl);
+            taskbarAppsContainer.appendChild(taskbarEl);
+            openWindows[app.Name] = { windowEl, taskbarEl };
+
+            if (!app.isStore) {
+                const iframe = windowEl.querySelector('iframe');
+                iframe.srcdoc = app.code;
+            }
+            
+            WindowManager.makeDraggable(windowEl);
+            WindowManager.focus(windowEl);
+
+            windowEl.querySelector('.close-btn').addEventListener('click', () => WindowManager.close(app.Name));
+            windowEl.querySelector('.minimize-btn').addEventListener('click', () => WindowManager.minimize(app.Name));
+            windowEl.querySelector('.maximize-btn').addEventListener('click', () => WindowManager.maximize(app.Name));
+            windowEl.addEventListener('mousedown', () => WindowManager.focus(windowEl), true);
+
+            return windowEl;
+        },
+        
+        createTaskbarIcon: (app, windowEl) => {
+            const taskbarEl = document.createElement('div');
+            taskbarEl.className = 'taskbar-app';
+            taskbarEl.title = app.Name;
+            taskbarEl.innerHTML = `<img src="${app.Icon}" alt="${app.Name}">`;
+            
+            taskbarEl.addEventListener('click', () => {
+                if (windowEl.style.display === 'none' || !taskbarEl.classList.contains('active')) {
+                    windowEl.style.display = 'flex';
+                    WindowManager.focus(windowEl);
+                } else {
+                    WindowManager.minimize(app.Name);
+                }
+            });
+            return taskbarEl;
+        },
+
+        minimize: (appName) => {
+            const win = openWindows[appName];
+            if (win) {
+                win.windowEl.style.display = 'none';
+                win.taskbarEl.classList.remove('active');
+            }
+        },
+
+        maximize: (appName) => {
+            const win = openWindows[appName];
+            if (!win) return;
+            const windowEl = win.windowEl;
+            const maximizeBtn = windowEl.querySelector('.maximize-btn');
+            const maxIcon = maximizeBtn.querySelector('.maximize-icon');
+            const restoreIcon = maximizeBtn.querySelector('.restore-icon');
+
+            if (windowEl.dataset.maximized === 'true') {
+                windowEl.style.top = windowEl.dataset.oldTop;
+                windowEl.style.left = windowEl.dataset.oldLeft;
+                windowEl.style.width = windowEl.dataset.oldWidth;
+                windowEl.style.height = windowEl.dataset.oldHeight;
+                windowEl.style.borderRadius = '';
+                windowEl.dataset.maximized = 'false';
+                maxIcon.classList.remove('hidden');
+                restoreIcon.classList.add('hidden');
+            } else {
+                windowEl.dataset.oldTop = windowEl.style.top;
+                windowEl.dataset.oldLeft = windowEl.style.left;
+                windowEl.dataset.oldWidth = windowEl.style.width;
+                windowEl.dataset.oldHeight = windowEl.style.height;
+
+                windowEl.style.top = '0px';
+                windowEl.style.left = '0px';
+                windowEl.style.width = `${desktop.clientWidth}px`;
+                windowEl.style.height = `${desktop.clientHeight}px`;
+                windowEl.style.borderRadius = '0px';
+                windowEl.dataset.maximized = 'true';
+                maxIcon.classList.add('hidden');
+                restoreIcon.classList.remove('hidden');
+            }
+        },
+
+        close: (appName) => {
+            const win = openWindows[appName];
+            if (win) {
+                win.windowEl.remove();
+                win.taskbarEl.remove();
+                delete openWindows[appName];
+            }
+        },
+        
+        focus: (windowEl) => {
+            highestZIndex++;
+            windowEl.style.zIndex = highestZIndex;
+            Object.values(openWindows).forEach(win => {
+                win.taskbarEl.classList.toggle('active', win.windowEl === windowEl);
+            });
+        },
+        
+        makeDraggable: (windowEl) => {
+            const titleBar = windowEl.querySelector('.title-bar');
+            let isDragging = false;
+            let offsetX, offsetY;
+
+            titleBar.addEventListener('mousedown', (e) => {
+                if (e.target.closest('button') || windowEl.dataset.maximized === 'true') return;
+                isDragging = true;
+                offsetX = e.clientX - windowEl.getBoundingClientRect().left;
+                offsetY = e.clientY - windowEl.getBoundingClientRect().top;
+                windowEl.style.userSelect = 'none';
+                WindowManager.focus(windowEl);
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    windowEl.style.left = `${e.clientX - offsetX}px`;
+                    windowEl.style.top = `${e.clientY - offsetY}px`;
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+                windowEl.style.userSelect = 'auto';
+            });
+        }
+    };
+
+    function getAppStoreData() {
+        return {
+            Name: "Laughable Apps",
+            Icon: appStoreIconBase64 || APP_STORE_ICON_URL,
+            Desc: "Find and install new apps.",
+            isStore: true
+        };
+    }
+
+    function renderDesktopIcons() {
+        desktop.querySelectorAll('.desktop-icon').forEach(icon => icon.remove());
+        const appStoreIcon = createDesktopIcon(getAppStoreData());
+        appStoreIcon.addEventListener('click', openAppStore);
+        desktop.appendChild(appStoreIcon);
+
+        const installedApps = AppDB.getInstalledApps();
+        installedApps.forEach(app => {
+            const appIcon = createDesktopIcon(app);
+            appIcon.addEventListener('click', () => WindowManager.create(app));
+            desktop.appendChild(appIcon);
+        });
+    }
+
+    function createDesktopIcon(app) {
+        const iconEl = document.createElement('div');
+        iconEl.className = 'desktop-icon';
+        iconEl.innerHTML = `
+            <img src="${app.Icon}" alt="${app.Name}">
+            <span>${app.Name}</span>
+        `;
+        return iconEl;
+    }
 
     // --- App Store Logic ---
-    // ... unchanged ...
+    async function openAppStore() {
+        if (!appStoreIconBase64) await cacheAppStoreIcon();
+        const storeWindow = WindowManager.create(getAppStoreData());
+        const contentArea = storeWindow.querySelector('.app-store-container');
+        if (!navigator.onLine) {
+            contentArea.innerHTML = `<div class="flex flex-col items-center justify-center h-full text-center p-8">
+                    <img src="${appStoreIconBase64 || APP_STORE_ICON_URL}" class="w-24 h-24 mb-4 rounded-xl border" alt="Laughable Apps">
+                    <h2 class="text-2xl font-bold mb-2">Laughable Apps</h2>
+                    <p class="text-red-600 font-semibold">Laughable Apps can't be used offline.</p>
+                </div>`;
+            return;
+        }
+        contentArea.innerHTML = '<p class="p-4">Loading apps...</p>';
+        try {
+            if (allAppsCache.length === 0) {
+                 const response = await fetch(APP_STORE_URL);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const rawText = await response.text();
+                allAppsCache = parseAppText(rawText);
+            }
+            renderAppStoreShell(contentArea, allAppsCache);
+        } catch (error) {
+            console.error("Could not fetch or parse app store data:", error);
+            contentArea.innerHTML = `<p class="text-red-500 p-4">Error loading app store.</p>`;
+        }
+    }
+    
+    // --- MULTIPLE SCREENSHOT SUPPORT ---
+    function parseAppText(rawText) {
+        const apps = [];
+        const cleanedText = rawText.trim().slice(1, -1).trim();
+        const appBlocks = cleanedText.split('[').filter(block => block.trim() !== '');
+
+        for (const block of appBlocks) {
+            const appData = {};
+            const content = block.trim().slice(0, -1).trim();
+            const lines = content.split('\n');
+            for (const line of lines) {
+                const trimmedLine = line.trim();
+                if (trimmedLine) {
+                    const separatorIndex = trimmedLine.indexOf(':');
+                    if (separatorIndex > -1) {
+                        const key = trimmedLine.substring(0, separatorIndex).trim();
+                        let value = trimmedLine.substring(separatorIndex + 1).trim();
+                        if (value.endsWith(',')) value = value.slice(0, -1).trim();
+                        if ((value.startsWith("'") && value.endsWith("'")) || (value.startsWith('"') && value.endsWith('"'))) {
+                            value = value.slice(1, -1);
+                        }
+                        // --- Support for multiple screenshots ---
+                        if (key === "Ss") {
+                            value = value.split(',').map(v => v.trim()).filter(Boolean);
+                        }
+                        appData[key] = value;
+                    }
+                }
+            }
+            if (Object.keys(appData).length > 0) apps.push(appData);
+        }
+        return apps;
+    }
+
+    function renderAppStoreShell(container, apps) {
+        container.innerHTML = `
+            <div class="p-4 border-b flex items-center gap-4 flex-shrink-0">
+                 <button id="app-store-back-btn" class="hidden p-2 rounded-full hover:bg-gray-200">&larr;</button>
+                 <div class="relative flex-grow">
+                    <input type="text" id="app-search-bar" placeholder="Search apps..." class="w-full pl-10 pr-4 py-2 rounded-full bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                 </div>
+            </div>
+            <div id="app-store-content" class="flex-grow overflow-y-auto p-6"></div>
+        `;
+        
+        const contentDiv = container.querySelector('#app-store-content');
+        const searchBar = container.querySelector('#app-search-bar');
+        const backBtn = container.querySelector('#app-store-back-btn');
+
+        renderAppGridView(contentDiv, apps);
+
+        searchBar.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const filteredApps = allAppsCache.filter(app => 
+                app.Name.toLowerCase().includes(searchTerm) || app.Desc.toLowerCase().includes(searchTerm)
+            );
+            renderAppGridView(contentDiv, filteredApps);
+            backBtn.classList.add('hidden');
+        });
+
+        backBtn.addEventListener('click', () => {
+             renderAppGridView(contentDiv, allAppsCache);
+             searchBar.value = '';
+             backBtn.classList.add('hidden');
+        });
+    }
+
+    function renderAppGridView(container, apps) {
+        container.innerHTML = '';
+        const grid = document.createElement('div');
+        grid.className = 'app-store-grid';
+
+        if(apps.length === 0) {
+            container.innerHTML = '<p class="text-gray-500">No apps found.</p>';
+            return;
+        }
+
+        apps.forEach(app => {
+            const item = document.createElement('div');
+            item.className = 'app-store-item';
+            item.innerHTML = `
+                <img src="${app.Icon}" alt="${app.Name}" class="rounded-lg bg-gray-200">
+                <span class="font-semibold text-sm">${app.Name}</span>
+            `;
+            item.addEventListener('click', () => renderAppDetailView(container.closest('.app-store-container'), app));
+            grid.appendChild(item);
+        });
+        container.appendChild(grid);
+    }
+
+    // --- MULTIPLE SCREENSHOT RENDERING ---
+    function renderAppDetailView(mainContainer, app) {
+        const contentDiv = mainContainer.querySelector('#app-store-content');
+        mainContainer.querySelector('#app-store-back-btn').classList.remove('hidden');
+        let screenshotsHTML = '';
+        if (Array.isArray(app.Ss) && app.Ss.length > 0) {
+            screenshotsHTML = app.Ss.map(url =>
+                `<img src="${url}" class="max-h-48 rounded-lg border" alt="Screenshot">`
+            ).join('');
+        } else if (typeof app.Ss === 'string' && app.Ss) {
+            screenshotsHTML = `<img src="${app.Ss}" class="max-h-48 rounded-lg border" alt="Screenshot">`;
+        } else {
+            screenshotsHTML = `<span class="text-gray-400">No screenshots</span>`;
+        }
+
+        contentDiv.innerHTML = `
+            <div class="flex flex-col gap-6">
+                <div class="flex items-center gap-4">
+                    <img src="${app.Icon}" class="w-24 h-24 rounded-2xl bg-gray-200" alt="${app.Name}">
+                    <div class="flex-grow">
+                        <h2 class="font-bold text-3xl">${app.Name}</h2>
+                        <div class="mt-2 flex gap-2">
+                            <button class="install-btn px-6 py-2 text-base font-semibold rounded-full bg-blue-500 hover:bg-blue-600 text-white">Install</button>
+                            <button class="uninstall-btn px-6 py-2 text-base font-semibold rounded-full bg-red-500 hover:bg-red-600 text-white">Uninstall</button>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-lg mb-2 border-b pb-1">Description</h3>
+                    <p class="text-gray-700">${app.Desc}</p>
+                </div>
+                <div>
+                     <h3 class="font-semibold text-lg mb-2 border-b pb-1">Screenshots</h3>
+                     <div class="flex gap-4 overflow-x-auto">
+                        ${screenshotsHTML}
+                     </div>
+                </div>
+            </div>
+        `;
+        
+        const installBtn = contentDiv.querySelector('.install-btn');
+        const uninstallBtn = contentDiv.querySelector('.uninstall-btn');
+
+        const updateButtons = () => {
+            const isAppInstalled = AppDB.getInstalledApps().some(a => a.Name === app.Name);
+            installBtn.style.display = isAppInstalled ? 'none' : 'block';
+            uninstallBtn.style.display = isAppInstalled ? 'block' : 'none';
+        };
+        updateButtons();
+
+        installBtn.addEventListener('click', async (e) => {
+            const button = e.target;
+            button.textContent = 'Installing...';
+            button.disabled = true;
+            try {
+                const code = await fetch(app.Embed).then(res => res.text());
+                const iconBlob = await fetch(app.Icon).then(res => res.blob());
+                const iconBase64 = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(iconBlob);
+                });
+                const appDataToStore = { Name: app.Name, Desc: app.Desc, Icon: iconBase64, code: code };
+                AppDB.installApp(appDataToStore);
+                renderDesktopIcons();
+                renderStartMenu();
+                updateButtons();
+            } catch (error) {
+                console.error(`Failed to install ${app.Name}:`, error);
+                button.textContent = 'Failed';
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Install';
+            }
+        });
+
+        uninstallBtn.addEventListener('click', () => {
+            AppDB.uninstallApp(app.Name);
+            renderDesktopIcons();
+            renderStartMenu();
+            if (openWindows[app.Name]) {
+                WindowManager.close(app.Name);
+            }
+            updateButtons();
+        });
+    }
 
     // --- POWER/SLEEP BUTTONS ---
-    // ... unchanged ...
+    // Replace all power off/shutdown with parent.postMessage('close-tab', '*')
+    function closeTab() {
+        parent.postMessage('close-tab', '*');
+    }
+    // Sleep mode: parent.postMessage('exit-fullscreen', '*')
+    function sleepMode() {
+        parent.postMessage('exit-fullscreen', '*');
+    }
+    // Exiting sleep mode: parent.postMessage('enter-fullscreen', '*')
+    function exitSleepMode() {
+        parent.postMessage('enter-fullscreen', '*');
+    }
+    // Restart: parent.postMessage('shutdown-os', '*')
+    function restartTab() {
+        parent.postMessage('shutdown-os', '*');
+    }
 
-    // --- Sleep overlay logic ---
-    // ... unchanged ...
+    // Sleep overlay logic
+    function enterSleep() {
+        sleepMode();
+        sleepSaver.style.display = "flex";
+    }
+    function wakeUpSleepSaver() {
+        sleepSaver.style.display = "none";
+        exitSleepMode();
+    }
+    sleepSaver.addEventListener('click', wakeUpSleepSaver);
 
     function renderStartMenu() {
         startMenu.innerHTML = '';
@@ -145,28 +869,56 @@
         });
 
         // --- Power/Sleep/Restart Row ---
-        // ... unchanged ...
-
-        // --- Wallpaper Change Button ---
-        // (Optional, for demonstration: allow user to paste an image URL)
-        const wallpaperBtn = document.createElement('button');
-        wallpaperBtn.className = "power-btn";
-        wallpaperBtn.innerHTML = `
+        const actionRow = document.createElement('div');
+        actionRow.className = "start-menu-action-row";
+        // Power Off Button
+        const powerBtn = document.createElement('button');
+        powerBtn.className = "power-btn";
+        powerBtn.innerHTML = `
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none">
-                <rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
-                <circle cx="8.5" cy="8.5" r="2.5" fill="currentColor"/>
-                <path d="M4 20L10 14L14 18L20 12" stroke="currentColor" stroke-width="2"/>
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
+                <rect x="11" y="5" width="2" height="8" rx="1" fill="currentColor"/>
             </svg>
-            Wallpaper
+            Power Off
         `;
-        wallpaperBtn.title = "Change wallpaper";
-        wallpaperBtn.addEventListener("click", () => {
-            const url = prompt("Paste image URL or Data URI for your wallpaper:");
-            if (url && url.trim().length > 0) {
-                setWallpaper(url.trim());
-            }
+        powerBtn.title = "Power off (close tab)";
+        powerBtn.addEventListener("click", () => {
+            closeTab();
         });
-        actionRow.appendChild(wallpaperBtn);
+
+        // Sleep Button
+        const sleepBtn = document.createElement('button');
+        sleepBtn.className = "power-btn";
+        sleepBtn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <path d="M17.75 6.25A8.25 8.25 0 1 1 6.25 17.75C15.5 17.75 17.75 15.5 17.75 6.25Z" stroke="currentColor" stroke-width="2" fill="none"/>
+            </svg>
+            Sleep
+        `;
+        sleepBtn.title = "Sleep (exit fullscreen)";
+        sleepBtn.addEventListener("click", () => {
+            startMenu.classList.add('hidden');
+            startMenu.classList.remove('open');
+            enterSleep();
+        });
+
+        // Restart Button
+        const restartBtn = document.createElement('button');
+        restartBtn.className = "power-btn";
+        restartBtn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <path d="M17 6.083A8.001 8.001 0 1 0 19.938 15H17m0 0v-3m0 3 3 3" stroke="currentColor" stroke-width="2" fill="none"/>
+            </svg>
+            Restart
+        `;
+        restartBtn.title = "Restart (shutdown OS)";
+        restartBtn.addEventListener("click", () => {
+            restartTab();
+        });
+
+        actionRow.appendChild(powerBtn);
+        actionRow.appendChild(sleepBtn);
+        actionRow.appendChild(restartBtn);
 
         startMenu.appendChild(actionRow);
     }
@@ -177,10 +929,47 @@
         startMenu.classList.toggle('open');
     });
 
-    // ... rest of original event listeners and functions unchanged ...
+    speakerIconContainer.addEventListener('click', (e) => {
+        e.stopPropagation();
+        volumeSliderPopup.classList.toggle('hidden');
+    });
+    
+    document.addEventListener('click', (e) => {
+        if (!startMenu.contains(e.target) && !startButton.contains(e.target)) {
+            startMenu.classList.add('hidden');
+            startMenu.classList.remove('open');
+        }
+        if (!volumeSliderPopup.contains(e.target) && !speakerIconContainer.contains(e.target)) {
+            volumeSliderPopup.classList.add('hidden');
+        }
+    });
 
+    function updateWifiStatus() {
+        if (navigator.onLine) {
+            wifiOn.classList.remove('hidden');
+            wifiOff.classList.add('hidden');
+        } else {
+            wifiOn.classList.add('hidden');
+            wifiOff.classList.remove('hidden');
+        }
+    }
+    
+    volumeSlider.addEventListener('input', (e) => {
+        const value = parseInt(e.target.value, 10);
+        [speakerHigh, speakerLow, speakerMuted].forEach(el => el.classList.add('hidden'));
+        if (value === 0) speakerMuted.classList.remove('hidden');
+        else if (value <= 50) speakerLow.classList.remove('hidden');
+        else speakerHigh.classList.remove('hidden');
+    });
+
+    function updateClock() {
+        const now = new Date();
+        timeElement.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+        dateElement.textContent = now.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+    
     async function init() {
-        setWallpaperFromStorageOrDefault(); // <--- Add this here!
+        setWallpaperFromStorageOrDefault();
         await cacheAppStoreIcon();
         renderDesktopIcons();
         renderStartMenu();
